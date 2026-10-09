@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staff Management — MediSync HMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sky-900: #0a3554; --sky-800: #0d4266; --sky-700: #10557f; --sky-600: #1478a8;
+  --sky-500: #1c9fe0; --sky-400: #3fb6ea; --sky-300: #7ccdf0; --sky-100: #e4f4fb;
+  --paper: #f2f8fb; --paper-line: #dbe8ef; --ink: #142c3a; --slate: #5c7284; --slate-light: #94a8b6;
+  --pulse: #e85d4e; --amber: #d99a2b; --good: #2e9a6c;
+  --font-display: "Fraunces", "Iowan Old Style", serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; min-height: 100vh; background: var(--paper); color: var(--ink); font-family: var(--font-body); }
+a { color: inherit; text-decoration: none; }
+button, select, input, textarea { font-family: var(--font-body); }
+.app-shell { display: flex; min-height: 100vh; }
+ 
+.sidebar {
+  width: 240px; flex-shrink: 0;
+  background: linear-gradient(180deg, var(--sky-900), var(--sky-800));
+  color: #eaf5fb; display: flex; flex-direction: column; padding: 1.6rem 1.1rem;
+  position: sticky; top: 0; height: 100vh;
+}
+.sidebar-brand { display: flex; align-items: center; gap: 0.7rem; padding: 0 0.4rem 1.6rem; }
+.sidebar-brand .logo-mark {
+  width: 42px; height: 42px; border-radius: 11px; background: rgba(255,255,255,0.95);
+  display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;
+}
+.sidebar-brand .logo-mark img { width: 100%; height: 100%; object-fit: contain; }
+.sidebar-brand .brand-text strong { display: block; font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; }
+.sidebar-brand .brand-text span { display: block; font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sky-300); margin-top: 0.1rem; }
+.sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
+.sidebar-nav a { display: flex; align-items: center; gap: 0.75rem; padding: 0.68rem 0.8rem; border-radius: 10px; font-size: 0.9rem; font-weight: 500; color: rgba(234,245,251,0.82); transition: background 0.15s, color 0.15s; }
+.sidebar-nav a svg { width: 18px; height: 18px; flex-shrink: 0; }
+.sidebar-nav a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.sidebar-nav a.active { background: var(--sky-500); color: #fff; }
+.sidebar-logout { display: flex; align-items: center; gap: 0.75rem; padding: 0.68rem 0.8rem; border-radius: 10px; font-size: 0.9rem; font-weight: 500; color: rgba(234,245,251,0.72); background: none; border: none; width: 100%; cursor: pointer; }
+.sidebar-logout svg { width: 18px; height: 18px; }
+.sidebar-logout:hover { background: rgba(232,93,78,0.18); color: #ffb3a8; }
+ 
+.main-area { flex: 1; min-width: 0; }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.3rem 2.2rem; background: #fff; border-bottom: 1px solid var(--paper-line); flex-wrap: wrap; }
+.topbar h1 { font-family: var(--font-display); font-weight: 600; font-size: 1.55rem; margin: 0; }
+.topbar p { margin: 0.2rem 0 0; font-size: 0.85rem; color: var(--slate); }
+.profile-link { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px var(--sky-100); }
+.profile-link img { width: 100%; height: 100%; object-fit: cover; }
+main { padding: 2rem 2.2rem 3rem; }
+ 
+.mini-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.4rem; }
+.mini-card { background: #fff; border: 1px solid var(--paper-line); border-radius: 12px; padding: 1.1rem 1.2rem; }
+.mini-card .label { font-size: 0.78rem; color: var(--slate); margin: 0 0 0.3rem; }
+.mini-card .value { font-family: var(--font-display); font-weight: 600; font-size: 1.5rem; margin: 0; }
+.mini-card.accent .value { color: var(--sky-600); }
+.mini-card.warn .value { color: var(--amber); }
+.mini-card.alert .value { color: var(--pulse); }
+ 
+.toolbar { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.3rem; flex-wrap: wrap; }
+.search-box { flex: 1; min-width: 220px; position: relative; }
+.search-box svg { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); width: 17px; height: 17px; color: var(--slate-light); }
+.search-box input { width: 100%; padding: 0.72rem 1rem 0.72rem 2.6rem; border-radius: 10px; border: 1px solid var(--paper-line); background: #fff; font-size: 0.9rem; }
+.search-box input:focus { outline: none; border-color: var(--sky-400); box-shadow: 0 0 0 3px var(--sky-100); }
+.filter-select { font-size: 0.88rem; padding: 0.68rem 0.9rem; border-radius: 10px; border: 1px solid var(--paper-line); background: #fff; }
+.btn-primary { display: flex; align-items: center; gap: 0.5rem; background: var(--sky-900); color: #fff; border: none; padding: 0.72rem 1.2rem; border-radius: 10px; font-size: 0.88rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.btn-primary:hover { background: var(--sky-800); }
+.btn-primary svg { width: 16px; height: 16px; }
+ 
+.staff-list { display: flex; flex-direction: column; gap: 0.9rem; }
+.staff-card { background: #fff; border: 1px solid var(--paper-line); border-radius: 14px; padding: 1.1rem 1.4rem; display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap; transition: box-shadow 0.15s, border-color 0.15s; }
+.staff-card:hover { box-shadow: 0 10px 24px rgba(20,44,58,0.08); border-color: var(--sky-300); }
+.staff-avatar { width: 48px; height: 48px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: var(--sky-100); }
+.staff-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.staff-name-block { min-width: 170px; flex: 1.2; }
+.staff-name-block h3 { margin: 0; font-size: 1rem; font-weight: 700; }
+.staff-name-block .sub { margin: 0.15rem 0 0; font-size: 0.8rem; color: var(--slate); }
+.staff-name-block .meta { margin: 0.15rem 0 0; font-size: 0.76rem; color: var(--slate-light); font-family: var(--font-mono); }
+.status-badge { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; padding: 0.2rem 0.55rem; border-radius: 999px; white-space: nowrap; }
+.status-badge.active { background: rgba(46,154,108,0.14); color: var(--good); }
+.status-badge.leave { background: rgba(217,154,43,0.16); color: var(--amber); }
+.status-badge.inactive { background: rgba(148,168,182,0.2); color: var(--slate); }
+.dept-tag { font-size: 0.72rem; font-weight: 600; padding: 0.22rem 0.6rem; border-radius: 999px; background: var(--sky-100); color: var(--sky-800); white-space: nowrap; }
+.row-actions { display: flex; gap: 0.5rem; margin-left: auto; flex-wrap: wrap; }
+.pill-btn { display: flex; align-items: center; gap: 0.4rem; border: 1px solid var(--paper-line); background: #fff; color: var(--ink); padding: 0.48rem 0.85rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.pill-btn:hover { border-color: var(--sky-400); background: var(--sky-100); }
+.pill-btn svg { width: 14px; height: 14px; }
+.empty-state { text-align: center; padding: 3rem 1rem; color: var(--slate); background: #fff; border: 1px dashed var(--paper-line); border-radius: 14px; }
+ 
+.modal-overlay { position: fixed; inset: 0; background: rgba(10,53,84,0.45); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1.2rem; }
+.modal-overlay.is-open { display: flex; }
+.modal-box { background: #fff; border-radius: 16px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: 0 30px 60px rgba(10,53,84,0.35); }
+.modal-head { background: var(--sky-900); color: #fff; padding: 1.3rem 1.6rem; display: flex; align-items: center; justify-content: space-between; border-radius: 16px 16px 0 0; position: sticky; top: 0; z-index: 2; }
+.modal-head h2 { margin: 0; font-family: var(--font-display); font-size: 1.2rem; font-weight: 600; }
+.modal-close { background: none; border: none; color: #fff; opacity: 0.85; cursor: pointer; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
+.modal-close:hover { opacity: 1; background: rgba(255,255,255,0.14); }
+.modal-close svg { width: 18px; height: 18px; }
+.modal-body { padding: 1.4rem 1.6rem 0.4rem; display: flex; flex-direction: column; gap: 1.05rem; }
+.field label { display: block; font-size: 0.86rem; font-weight: 700; margin-bottom: 0.4rem; }
+.field input, .field select, .field textarea { width: 100%; padding: 0.65rem 0.8rem; border-radius: 9px; border: 1px solid var(--paper-line); background: var(--paper); font-size: 0.86rem; }
+.field textarea { resize: vertical; min-height: 60px; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--sky-400); box-shadow: 0 0 0 3px var(--sky-100); background: #fff; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1.3rem 1.6rem 1.5rem; }
+.btn-secondary { background: var(--paper); border: 1px solid var(--paper-line); color: var(--ink); padding: 0.65rem 1.2rem; border-radius: 9px; font-size: 0.86rem; font-weight: 600; cursor: pointer; }
+.btn-secondary:hover { background: #e9eff3; }
+.btn-small { align-self: flex-start; background: var(--sky-500); color: #fff; border: none; padding: 0.5rem 0.95rem; border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
+.btn-small:hover { background: var(--sky-600); }
+.summary-block { background: var(--paper); border-radius: 12px; padding: 1rem 1.1rem; }
+.summary-block h4 { margin: 0 0 0.7rem; font-size: 0.78rem; font-weight: 700; color: var(--sky-800); text-transform: uppercase; letter-spacing: 0.02em; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+.summary-grid .lbl { font-size: 0.72rem; color: var(--slate); margin-bottom: 0.15rem; }
+.summary-grid .val { font-size: 0.92rem; font-weight: 700; }
+ 
+.entry-list { display: flex; flex-direction: column; gap: 0.6rem; }
+.entry-item { border: 1px solid var(--paper-line); border-radius: 10px; padding: 0.75rem 0.9rem; background: var(--paper); }
+.entry-item .ei-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; }
+.entry-item .ei-date { font-family: var(--font-mono); font-size: 0.74rem; color: var(--sky-700); font-weight: 600; }
+.entry-item .ei-title { font-size: 0.86rem; font-weight: 700; margin: 0.15rem 0 0; }
+.entry-item .ei-notes { font-size: 0.8rem; color: var(--slate); margin: 0.15rem 0 0; }
+.entry-empty { text-align: center; padding: 1.2rem; color: var(--slate-light); font-size: 0.85rem; }
+.add-box { border: 1px dashed var(--paper-line); border-radius: 10px; padding: 1rem; display: flex; flex-direction: column; gap: 0.8rem; }
+.add-box h4 { margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--sky-900); }
+ 
+.att-pill { font-size: 0.7rem; font-weight: 700; padding: 0.16rem 0.55rem; border-radius: 999px; }
+.att-pill.Present { background: rgba(46,154,108,0.14); color: var(--good); }
+.att-pill.Late { background: rgba(217,154,43,0.16); color: var(--amber); }
+.att-pill.Absent { background: rgba(232,93,78,0.14); color: var(--pulse); }
+ 
+.leave-pill { font-size: 0.7rem; font-weight: 700; padding: 0.16rem 0.55rem; border-radius: 999px; }
+.leave-pill.Approved { background: rgba(46,154,108,0.14); color: var(--good); }
+.leave-pill.Pending { background: rgba(217,154,43,0.16); color: var(--amber); }
+.leave-pill.Rejected { background: rgba(232,93,78,0.14); color: var(--pulse); }
+ 
+@media (max-width: 1080px) { .mini-stats { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 760px) {
+  .app-shell { flex-direction: column; }
+  .sidebar { width: 100%; height: auto; position: relative; flex-direction: row; align-items: center; overflow-x: auto; }
+  .sidebar-brand { padding: 0 1rem 0 0; }
+  .sidebar-nav { flex-direction: row; }
+  .sidebar-logout { display: none; }
+  main { padding: 1.4rem 1.2rem 2.4rem; }
+  .topbar { padding: 1rem 1.2rem; }
+  .mini-stats { grid-template-columns: 1fr; }
+  .row-actions { margin-left: 0; width: 100%; }
+  .field-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+ 
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo-mark"><img src="medisync_logo.jpeg" alt="MediSync logo"></div>
+      <div class="brand-text"><strong>MediSync</strong><span>Hospital Management</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Dashboard
+      </a>
+      <a href="patients.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Patients
+      </a>
+      <a href="doctors.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg>
+        Doctors
+      </a>
+      <a href="staff.html" class="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Staff
+      </a>
+      <a href="billing.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 14h3"/></svg>
+        Billing
+      </a>
+      <a href="laboratory.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6.5L4.5 17a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L15 8.5V2"/><path d="M9 2h6M8.5 13h7"/></svg>
+        Laboratory
+      </a>
+      <a href="contact.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.68 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.32 1.85.55 2.81.68A2 2 0 0 1 22 16.92Z"/></svg>
+        Contact Us
+      </a>
+    </nav>
+    <a href="login_page.html" class="sidebar-logout">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </a>
+  </aside>
+ 
+  <div class="main-area">
+    <header class="topbar">
+      <div>
+        <h1>Staff Management</h1>
+        <p>Employee registration, attendance, department assignment, and leave records.</p>
+      </div>
+      <div class="topbar-right">
+        <a href="profile.html" class="profile-link" title="My Profile"><img src="profile_icon.jpg" alt="Profile"></a>
+      </div>
+    </header>
+ 
+    <main>
+      <div class="mini-stats">
+        <div class="mini-card"><p class="label">Total Staff</p><p class="value" id="statTotal">0</p></div>
+        <div class="mini-card accent"><p class="label">Present Today</p><p class="value" id="statPresent">0</p></div>
+        <div class="mini-card warn"><p class="label">On Leave</p><p class="value" id="statLeave">0</p></div>
+        <div class="mini-card alert"><p class="label">Pending Leave Requests</p><p class="value" id="statPending">0</p></div>
+      </div>
+ 
+      <div class="toolbar">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" id="searchInput" placeholder="Search by name or employee ID&hellip;">
+        </div>
+        <select class="filter-select" id="deptFilter">
+          <option value="all">All departments</option>
+        </select>
+        <button class="btn-primary" type="button" id="registerBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Register Employee
+        </button>
+      </div>
+ 
+      <div class="staff-list" id="staffList"></div>
+      <div class="empty-state" id="emptyState" style="display:none;">No employees match your search.</div>
+    </main>
+  </div>
+</div>
+
+<div class="modal-overlay" id="registerModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2 id="registerModalTitle">Register New Employee</h2>
+      <button class="modal-close" data-close="registerModal" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <form id="registerForm">
+      <div class="modal-body">
+        <div class="field"><label>Full Name</label><input type="text" id="e-name" placeholder="Enter full name"></div>
+        <div class="field-row">
+          <div class="field"><label>Employee ID</label><input type="text" id="e-empid" placeholder="e.g. EMP-104"></div>
+          <div class="field"><label>Role / Title</label><input type="text" id="e-role" placeholder="e.g. Staff Nurse"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Department</label>
+            <select id="e-dept">
+              <option>Cardiology</option><option>Orthopedics</option><option>Gynecology</option>
+              <option>General Medicine</option><option>Laboratory</option><option>Pharmacy</option>
+              <option>Administration</option><option>Nursing</option>
+            </select>
+          </div>
+          <div class="field"><label>Status</label>
+            <select id="e-status"><option>Active</option><option>Inactive</option></select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Phone</label><input type="tel" id="e-phone" placeholder="(555) 123 4567"></div>
+          <div class="field"><label>Join Date</label><input type="date" id="e-joined"></div>
+        </div>
+        <div class="field"><label>Email</label><input type="email" id="e-email" placeholder="employee@medisync.com"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" data-close="registerModal">Cancel</button>
+        <button type="submit" class="btn-primary" id="registerSaveBtn">Save Employee</button>
+      </div>
+    </form>
+  </div>
+</div>
+ 
+<!-- Attendance Modal -->
+<div class="modal-overlay" id="attendanceModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2 id="attendanceModalTitle">Attendance</h2>
+      <button class="modal-close" data-close="attendanceModal" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="entry-list" id="attendanceList"></div>
+      <div class="add-box">
+        <h4>Mark Attendance</h4>
+        <div class="field-row">
+          <div class="field" style="margin:0;"><label>Date</label><input type="date" id="att-date"></div>
+          <div class="field" style="margin:0;"><label>Status</label>
+            <select id="att-status"><option>Present</option><option>Late</option><option>Absent</option></select>
+          </div>
+        </div>
+        <button type="button" class="btn-small" id="addAttendanceBtn">Add Entry</button>
+      </div>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn-secondary" data-close="attendanceModal">Close</button></div>
+  </div>
+</div>
+ 
+<!-- Department Assignment Modal -->
+<div class="modal-overlay" id="deptModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2 id="deptModalTitle">Department Assignment</h2>
+      <button class="modal-close" data-close="deptModal" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="summary-block">
+        <h4>Current Assignment</h4>
+        <div class="summary-grid">
+          <div><div class="lbl">Department</div><div class="val" id="deptCurrent">&mdash;</div></div>
+          <div><div class="lbl">Role</div><div class="val" id="deptRole">&mdash;</div></div>
+        </div>
+      </div>
+      <div class="entry-list" id="deptHistoryList"></div>
+      <div class="add-box">
+        <h4>Reassign Department</h4>
+        <div class="field-row">
+          <div class="field" style="margin:0;"><label>New Department</label>
+            <select id="dept-new">
+              <option>Cardiology</option><option>Orthopedics</option><option>Gynecology</option>
+              <option>General Medicine</option><option>Laboratory</option><option>Pharmacy</option>
+              <option>Administration</option><option>Nursing</option>
+            </select>
+          </div>
+          <div class="field" style="margin:0;"><label>Effective Date</label><input type="date" id="dept-date"></div>
+        </div>
+        <div class="field" style="margin:0;"><label>Reason</label><input type="text" id="dept-reason" placeholder="e.g. Ward rotation, promotion"></div>
+        <button type="button" class="btn-small" id="addDeptBtn">Reassign</button>
+      </div>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn-secondary" data-close="deptModal">Close</button></div>
+  </div>
+</div>
+ 
+<!-- Leave Records Modal -->
+<div class="modal-overlay" id="leaveModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2 id="leaveModalTitle">Leave Records</h2>
+      <button class="modal-close" data-close="leaveModal" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="entry-list" id="leaveList"></div>
+      <div class="add-box">
+        <h4>New Leave Request</h4>
+        <div class="field-row">
+          <div class="field" style="margin:0;"><label>Type</label>
+            <select id="leave-type"><option>Annual</option><option>Sick</option><option>Casual</option><option>Maternity/Paternity</option></select>
+          </div>
+          <div class="field" style="margin:0;"><label>Status</label>
+            <select id="leave-status"><option>Pending</option><option>Approved</option><option>Rejected</option></select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field" style="margin:0;"><label>From</label><input type="date" id="leave-from"></div>
+          <div class="field" style="margin:0;"><label>To</label><input type="date" id="leave-to"></div>
+        </div>
+        <div class="field" style="margin:0;"><label>Notes</label><textarea id="leave-notes" placeholder="Reason for leave&hellip;"></textarea></div>
+        <button type="button" class="btn-small" id="addLeaveBtn">Submit Request</button>
+      </div>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn-secondary" data-close="leaveModal">Close</button></div>
+  </div>
+</div>
+ 
+<script>
+try {
+ 
+  var STORAGE_KEY = 'medisync_staff';
+ 
+  var seedStaff = [
+    { id: 1, empId: 'EMP-101', name: 'Nadeesha Perera', role: 'Staff Nurse', dept: 'Cardiology', status: 'Active', phone: '(077) 123 4567', email: 'nadeesha@medisync.com', joined: '2022-03-14',
+      attendance: [{ date: '2026-08-31', status: 'Present' }, { date: '2026-08-30', status: 'Present' }],
+      deptHistory: [{ date: '2022-03-14', dept: 'Cardiology', reason: 'Initial assignment' }],
+      leaves: [{ type: 'Annual', from: '2026-09-10', to: '2026-09-14', status: 'Approved', notes: 'Family trip' }] },
+    { id: 2, empId: 'EMP-102', name: 'Kasun Silva', role: 'Lab Technician', dept: 'Laboratory', status: 'Active', phone: '(077) 234 5678', email: 'kasun@medisync.com', joined: '2021-11-02',
+      attendance: [{ date: '2026-08-31', status: 'Late' }],
+      deptHistory: [{ date: '2021-11-02', dept: 'Laboratory', reason: 'Initial assignment' }],
+      leaves: [] },
+    { id: 3, empId: 'EMP-103', name: 'Ishara Jayasuriya', role: 'Pharmacist', dept: 'Pharmacy', status: 'On Leave', phone: '(077) 345 6789', email: 'ishara@medisync.com', joined: '2023-01-20',
+      attendance: [{ date: '2026-08-29', status: 'Absent' }],
+      deptHistory: [{ date: '2023-01-20', dept: 'Pharmacy', reason: 'Initial assignment' }],
+      leaves: [{ type: 'Sick', from: '2026-08-29', to: '2026-09-02', status: 'Approved', notes: 'Flu recovery' }] },
+    { id: 4, empId: 'EMP-104', name: 'Dinesh Fernando', role: 'Receptionist', dept: 'Administration', status: 'Active', phone: '(077) 456 7890', email: 'dinesh@medisync.com', joined: '2024-06-05',
+      attendance: [{ date: '2026-08-31', status: 'Present' }],
+      deptHistory: [{ date: '2024-06-05', dept: 'Administration', reason: 'Initial assignment' }],
+      leaves: [{ type: 'Casual', from: '2026-09-05', to: '2026-09-05', status: 'Pending', notes: 'Personal errand' }] }
+  ];
+ 
+  function loadStaff() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    saveStaff(seedStaff);
+    return JSON.parse(JSON.stringify(seedStaff));
+  }
+  function saveStaff(list) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch (e) {} }
+ 
+  var staff = loadStaff();
+  var activeId = null;
+ 
+  var listEl = document.getElementById('staffList');
+  var emptyEl = document.getElementById('emptyState');
+  var searchInput = document.getElementById('searchInput');
+  var deptFilter = document.getElementById('deptFilter');
+ 
+  function escapeHtml(str) {
+    return String(str == null ? '' : str).replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+  function findStaff(id) { return staff.find(function (s) { return s.id === id; }); }
+  function formatDateStr(iso) {
+    if (!iso) return '&mdash;';
+    var parts = iso.split('-');
+    if (parts.length !== 3) return iso;
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return parseInt(parts[2], 10) + ' ' + months[parseInt(parts[1], 10) - 1] + ' ' + parts[0];
+  }
+ 
+  function populateDeptFilter() {
+    var depts = Array.from(new Set(staff.map(function (s) { return s.dept; }))).sort();
+    deptFilter.innerHTML = '<option value="all">All departments</option>' +
+      depts.map(function (d) { return '<option value="' + escapeHtml(d) + '">' + escapeHtml(d) + '</option>'; }).join('');
+  }
+ 
+  function renderStats() {
+    var today = new Date().toISOString().slice(0, 10);
+    var present = staff.filter(function (s) {
+      return (s.attendance || []).some(function (a) { return a.date === today && a.status === 'Present'; });
+    }).length;
+    var onLeave = staff.filter(function (s) { return s.status === 'On Leave'; }).length;
+    var pending = 0;
+    staff.forEach(function (s) { pending += (s.leaves || []).filter(function (l) { return l.status === 'Pending'; }).length; });
+ 
+    document.getElementById('statTotal').textContent = staff.length;
+    document.getElementById('statPresent').textContent = present;
+    document.getElementById('statLeave').textContent = onLeave;
+    document.getElementById('statPending').textContent = pending;
+  }
+ 
+  function statusClass(status) {
+    if (status === 'Active') return 'active';
+    if (status === 'On Leave') return 'leave';
+    return 'inactive';
+  }
+ 
+  function render() {
+    var q = (searchInput.value || '').trim().toLowerCase();
+    var deptVal = deptFilter.value;
+ 
+    var visible = staff.filter(function (s) {
+      var matchesQ = !q || s.name.toLowerCase().indexOf(q) !== -1 || s.empId.toLowerCase().indexOf(q) !== -1;
+      var matchesDept = deptVal === 'all' || s.dept === deptVal;
+      return matchesQ && matchesDept;
+    });
+ 
+    listEl.innerHTML = '';
+    emptyEl.style.display = visible.length ? 'none' : 'block';
+ 
+    visible.forEach(function (s) {
+      var card = document.createElement('div');
+      card.className = 'staff-card';
+      card.innerHTML =
+        '<div class="staff-avatar"><img src="staff_icon.jpg" alt=""></div>' +
+        '<div class="staff-name-block">' +
+          '<h3>' + escapeHtml(s.name) + '</h3>' +
+          '<p class="sub">' + escapeHtml(s.role) + '</p>' +
+          '<p class="meta">' + escapeHtml(s.empId) + '</p>' +
+        '</div>' +
+        '<span class="dept-tag">' + escapeHtml(s.dept) + '</span>' +
+        '<span class="status-badge ' + statusClass(s.status) + '">' + escapeHtml(s.status) + '</span>' +
+        '<div class="row-actions">' +
+          '<button class="pill-btn att-btn" type="button" data-id="' + s.id + '">Attendance</button>' +
+          '<button class="pill-btn dept-btn" type="button" data-id="' + s.id + '">Department</button>' +
+          '<button class="pill-btn leave-btn" type="button" data-id="' + s.id + '">Leave</button>' +
+        '</div>';
+      listEl.appendChild(card);
+    });
+ 
+    renderStats();
+  }
+ 
+  populateDeptFilter();
+  render();
+  searchInput.addEventListener('input', render);
+  deptFilter.addEventListener('change', render);
+ 
+  function openModal(id) { document.getElementById(id).classList.add('is-open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('is-open'); }
+  document.querySelectorAll('[data-close]').forEach(function (btn) {
+    btn.addEventListener('click', function () { closeModal(btn.dataset.close); activeId = null; });
+  });
+  document.querySelectorAll('.modal-overlay').forEach(function (ov) {
+    ov.addEventListener('click', function (e) { if (e.target === ov) { ov.classList.remove('is-open'); activeId = null; } });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { document.querySelectorAll('.modal-overlay.is-open').forEach(function (ov) { ov.classList.remove('is-open'); }); activeId = null; }
+  });
+ 
+  document.getElementById('registerBtn').addEventListener('click', function () {
+    document.getElementById('registerModalTitle').textContent = 'Register New Employee';
+    ['e-name','e-empid','e-role','e-phone','e-email'].forEach(function (id) { document.getElementById(id).value = ''; });
+    document.getElementById('e-dept').value = 'Cardiology';
+    document.getElementById('e-status').value = 'Active';
+    document.getElementById('e-joined').value = new Date().toISOString().slice(0, 10);
+    openModal('registerModal');
+  });
+ 
+  document.getElementById('registerForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = document.getElementById('e-name').value.trim();
+    var empId = document.getElementById('e-empid').value.trim();
+    var role = document.getElementById('e-role').value.trim();
+    var dept = document.getElementById('e-dept').value;
+    var status = document.getElementById('e-status').value;
+    var phone = document.getElementById('e-phone').value.trim();
+    var joined = document.getElementById('e-joined').value;
+    var email = document.getElementById('e-email').value.trim();
+ 
+    if (!name || !empId || !role) { alert('Please enter name, employee ID, and role.'); return; }
+ 
+    var newId = staff.length ? Math.max.apply(null, staff.map(function (s) { return s.id; })) + 1 : 1;
+    staff.push({
+      id: newId, empId: empId, name: name, role: role, dept: dept, status: status,
+      phone: phone, email: email, joined: joined || new Date().toISOString().slice(0, 10),
+      attendance: [], deptHistory: [{ date: joined || new Date().toISOString().slice(0, 10), dept: dept, reason: 'Initial assignment' }], leaves: []
+    });
+    saveStaff(staff);
+    populateDeptFilter();
+    render();
+    closeModal('registerModal');
+  });
+ 
+  listEl.addEventListener('click', function (e) {
+    var attBtn = e.target.closest('.att-btn');
+    var deptBtn = e.target.closest('.dept-btn');
+    var leaveBtn = e.target.closest('.leave-btn');
+ 
+    if (attBtn) {
+      var s1 = findStaff(Number(attBtn.dataset.id));
+      activeId = s1.id;
+      document.getElementById('attendanceModalTitle').textContent = 'Attendance \u2014 ' + s1.name;
+      document.getElementById('att-date').value = new Date().toISOString().slice(0, 10);
+      document.getElementById('att-status').value = 'Present';
+      renderAttendance(s1);
+      openModal('attendanceModal');
+    } else if (deptBtn) {
+      var s2 = findStaff(Number(deptBtn.dataset.id));
+      activeId = s2.id;
+      document.getElementById('deptModalTitle').textContent = 'Department Assignment \u2014 ' + s2.name;
+      document.getElementById('deptCurrent').textContent = s2.dept;
+      document.getElementById('deptRole').textContent = s2.role;
+      document.getElementById('dept-new').value = s2.dept;
+      document.getElementById('dept-date').value = new Date().toISOString().slice(0, 10);
+      document.getElementById('dept-reason').value = '';
+      renderDeptHistory(s2);
+      openModal('deptModal');
+    } else if (leaveBtn) {
+      var s3 = findStaff(Number(leaveBtn.dataset.id));
+      activeId = s3.id;
+      document.getElementById('leaveModalTitle').textContent = 'Leave Records \u2014 ' + s3.name;
+      document.getElementById('leave-type').value = 'Annual';
+      document.getElementById('leave-status').value = 'Pending';
+      document.getElementById('leave-from').value = '';
+      document.getElementById('leave-to').value = '';
+      document.getElementById('leave-notes').value = '';
+      renderLeaves(s3);
+      openModal('leaveModal');
+    }
+  });
+ 
+  function renderAttendance(s) {
+    var el = document.getElementById('attendanceList');
+    if (!s.attendance.length) { el.innerHTML = '<div class="entry-empty">No attendance recorded yet.</div>'; return; }
+    var sorted = s.attendance.slice().sort(function (a, b) { return (b.date || '').localeCompare(a.date || ''); });
+    el.innerHTML = sorted.map(function (a) {
+      return '<div class="entry-item"><div class="ei-top"><span class="ei-date">' + escapeHtml(formatDateStr(a.date)) + '</span><span class="att-pill ' + a.status + '">' + escapeHtml(a.status) + '</span></div></div>';
+    }).join('');
+  }
+  document.getElementById('addAttendanceBtn').addEventListener('click', function () {
+    if (!activeId) return;
+    var s = findStaff(activeId);
+    var date = document.getElementById('att-date').value;
+    var status = document.getElementById('att-status').value;
+    if (!date) { alert('Please select a date.'); return; }
+    s.attendance = s.attendance || [];
+    s.attendance = s.attendance.filter(function (a) { return a.date !== date; });
+    s.attendance.push({ date: date, status: status });
+    saveStaff(staff);
+    renderAttendance(s);
+    render();
+  });
+ 
+  function renderDeptHistory(s) {
+    var el = document.getElementById('deptHistoryList');
+    if (!s.deptHistory.length) { el.innerHTML = '<div class="entry-empty">No assignment history.</div>'; return; }
+    var sorted = s.deptHistory.slice().sort(function (a, b) { return (b.date || '').localeCompare(a.date || ''); });
+    el.innerHTML = sorted.map(function (d) {
+      return '<div class="entry-item">' +
+        '<div class="ei-top"><span class="ei-date">' + escapeHtml(formatDateStr(d.date)) + '</span><span class="dept-tag">' + escapeHtml(d.dept) + '</span></div>' +
+        (d.reason ? '<p class="ei-notes">' + escapeHtml(d.reason) + '</p>' : '') +
+        '</div>';
+    }).join('');
+  }
+  document.getElementById('addDeptBtn').addEventListener('click', function () {
+    if (!activeId) return;
+    var s = findStaff(activeId);
+    var newDept = document.getElementById('dept-new').value;
+    var date = document.getElementById('dept-date').value;
+    var reason = document.getElementById('dept-reason').value.trim();
+    if (!date) { alert('Please select an effective date.'); return; }
+    s.deptHistory = s.deptHistory || [];
+    s.deptHistory.push({ date: date, dept: newDept, reason: reason });
+    s.dept = newDept;
+    saveStaff(staff);
+    document.getElementById('deptCurrent').textContent = s.dept;
+    renderDeptHistory(s);
+    populateDeptFilter();
+    render();
+    document.getElementById('dept-reason').value = '';
+  });
+ 
+  function renderLeaves(s) {
+    var el = document.getElementById('leaveList');
+    if (!s.leaves.length) { el.innerHTML = '<div class="entry-empty">No leave records yet.</div>'; return; }
+    var sorted = s.leaves.slice().sort(function (a, b) { return (b.from || '').localeCompare(a.from || ''); });
+    el.innerHTML = sorted.map(function (l) {
+      return '<div class="entry-item">' +
+        '<div class="ei-top"><span class="ei-date">' + escapeHtml(formatDateStr(l.from)) + ' &rarr; ' + escapeHtml(formatDateStr(l.to)) + '</span><span class="leave-pill ' + l.status + '">' + escapeHtml(l.status) + '</span></div>' +
+        '<p class="ei-title">' + escapeHtml(l.type) + ' Leave</p>' +
+        (l.notes ? '<p class="ei-notes">' + escapeHtml(l.notes) + '</p>' : '') +
+        '</div>';
+    }).join('');
+  }
+  document.getElementById('addLeaveBtn').addEventListener('click', function () {
+    if (!activeId) return;
+    var s = findStaff(activeId);
+    var type = document.getElementById('leave-type').value;
+    var status = document.getElementById('leave-status').value;
+    var from = document.getElementById('leave-from').value;
+    var to = document.getElementById('leave-to').value;
+    var notes = document.getElementById('leave-notes').value.trim();
+    if (!from || !to) { alert('Please select both a from and to date.'); return; }
+    s.leaves = s.leaves || [];
+    s.leaves.push({ type: type, from: from, to: to, status: status, notes: notes });
+    if (status === 'Approved') s.status = 'On Leave';
+    saveStaff(staff);
+    renderLeaves(s);
+    render();
+    document.getElementById('leave-from').value = '';
+    document.getElementById('leave-to').value = '';
+    document.getElementById('leave-notes').value = '';
+  });
+ 
+} catch (initErr) {
+  console.error('MediSync staff.html failed to initialize:', initErr);
+  document.body.insertAdjacentHTML('afterbegin',
+    '<div style="background:#fee;border:1px solid #e85d4e;color:#a3392d;padding:1rem 2.2rem;font-family:monospace;font-size:0.85rem;white-space:pre-wrap;">This page hit a script error and could not load its data: ' +
+    (initErr && initErr.message ? initErr.message : initErr) + '</div>'
+  );
+}
+</script>
+ 
+</body>
+</html>

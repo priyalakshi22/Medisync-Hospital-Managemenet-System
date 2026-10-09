@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pharmacy — MediSync HMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sky-900: #0a3554;
+  --sky-800: #0d4266;
+  --sky-700: #10557f;
+  --sky-600: #1478a8;
+  --sky-500: #1c9fe0;
+  --sky-400: #3fb6ea;
+  --sky-300: #7ccdf0;
+  --sky-100: #e4f4fb;
+  --paper: #f2f8fb;
+  --paper-line: #dbe8ef;
+  --ink: #142c3a;
+  --slate: #5c7284;
+  --slate-light: #94a8b6;
+  --pulse: #e85d4e;
+  --amber: #d99a2b;
+  --good: #2e9a6c;
+ 
+  --font-display: "Fraunces", "Iowan Old Style", serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+}
+ 
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; min-height: 100vh; background: var(--paper); color: var(--ink); font-family: var(--font-body); }
+a { color: inherit; text-decoration: none; }
+button, select, input { font-family: var(--font-body); }
+ 
+.app-shell { display: flex; min-height: 100vh; }
+ 
+.sidebar {
+  width: 240px; flex-shrink: 0;
+  background: linear-gradient(180deg, var(--sky-900), var(--sky-800));
+  color: #eaf5fb;
+  display: flex; flex-direction: column;
+  padding: 1.6rem 1.1rem;
+  position: sticky; top: 0; height: 100vh;
+}
+.sidebar-brand { display: flex; align-items: center; gap: 0.7rem; padding: 0 0.4rem 1.6rem; }
+.sidebar-brand img {
+  width: 42px; height: 42px; border-radius: 11px;
+  background: rgba(255,255,255,0.95); object-fit: contain; padding: 4px;
+}
+.sidebar-brand .brand-text strong {
+  display: block; font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; letter-spacing: 0.01em;
+}
+.sidebar-brand .brand-text span {
+  display: block; font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--sky-300); margin-top: 0.1rem;
+}
+ 
+.sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
+.sidebar-nav a {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.68rem 0.8rem; border-radius: 10px;
+  font-size: 0.9rem; font-weight: 500; color: rgba(234,245,251,0.82);
+  transition: background 0.15s, color 0.15s;
+}
+.sidebar-nav a svg { width: 18px; height: 18px; flex-shrink: 0; }
+.sidebar-nav a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.sidebar-nav a.active { background: var(--sky-500); color: #fff; }
+ 
+.main-area { flex: 1; min-width: 0; }
+ 
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; padding: 1.3rem 2.2rem;
+  background: #fff; border-bottom: 1px solid var(--paper-line);
+  flex-wrap: wrap;
+}
+.topbar h1 {
+  font-family: var(--font-display); font-weight: 600; font-size: 1.55rem;
+  margin: 0; color: var(--ink);
+}
+.topbar p { margin: 0.2rem 0 0; font-size: 0.85rem; color: var(--slate); }
+ 
+.topbar-right { display: flex; align-items: center; gap: 0.8rem; }
+.profile-link {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--sky-500); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  transition: filter 0.15s, box-shadow 0.15s;
+  box-shadow: 0 0 0 2px var(--sky-100);
+}
+.profile-link:hover { filter: brightness(1.08); }
+.profile-link svg { width: 20px; height: 20px; }
+ 
+main { padding: 2rem 2.2rem 3rem; }
+ 
+.view-tabs {
+  display: flex; gap: 0.3rem; background: var(--sky-100); padding: 0.3rem; border-radius: 10px;
+  flex-wrap: wrap; margin-bottom: 1.3rem; width: fit-content;
+}
+.view-tab {
+  display: flex; align-items: center; gap: 0.45rem;
+  border: none; background: transparent; color: var(--sky-800);
+  font-size: 0.85rem; font-weight: 600; padding: 0.55rem 1rem;
+  border-radius: 8px; cursor: pointer; transition: background 0.15s, color 0.15s;
+}
+.view-tab svg { width: 15px; height: 15px; }
+.view-tab:hover { background: rgba(255,255,255,0.6); }
+.view-tab.active { background: var(--sky-500); color: #fff; }
+ 
+.appt-view { display: none; }
+.appt-view.active { display: block; }
+ 
+.mini-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.4rem; }
+.mini-card { background: #fff; border: 1px solid var(--paper-line); border-radius: 12px; padding: 1.1rem 1.2rem; }
+.mini-card .label { font-size: 0.78rem; color: var(--slate); margin: 0 0 0.3rem; }
+.mini-card .value { font-family: var(--font-display); font-weight: 600; font-size: 1.5rem; margin: 0; color: var(--ink); }
+.mini-card.accent .value { color: var(--sky-600); }
+.mini-card.warn .value { color: var(--amber); }
+.mini-card.alert .value { color: var(--pulse); }
+ 
+.toolbar { display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center; margin-bottom: 1.2rem; }
+.search-box { flex: 1; min-width: 220px; position: relative; }
+.search-box input {
+  width: 100%; font-family: var(--font-body); font-size: 0.9rem;
+  padding: 0.65rem 0.9rem 0.65rem 2.4rem; border-radius: 9px;
+  border: 1px solid var(--paper-line); background: #fff; color: var(--ink);
+  outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+}
+.search-box input:focus { border-color: var(--sky-500); box-shadow: 0 0 0 3px rgba(28,159,224,0.14); }
+.search-box svg { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--slate-light); }
+.filter-select { font-family: var(--font-body); font-size: 0.88rem; padding: 0.62rem 0.9rem; border-radius: 9px; border: 1px solid var(--paper-line); background: #fff; color: var(--ink); }
+ 
+.btn-primary {
+  font-family: var(--font-body); font-weight: 600; font-size: 0.88rem;
+  color: #fff; background: var(--sky-500); border: none; border-radius: 9px;
+  padding: 0.65rem 1.1rem; cursor: pointer; transition: background 0.15s;
+  display: inline-flex; align-items: center; gap: 0.4rem; white-space: nowrap;
+}
+.btn-primary:hover { background: var(--sky-600); }
+.btn-primary svg { width: 16px; height: 16px; }
+ 
+.panel { background: #fff; border: 1px solid var(--paper-line); border-radius: 14px; overflow: hidden; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.data-table th {
+  text-align: left; font-weight: 500; color: var(--slate);
+  font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.04em;
+  padding: 0.9rem 1.2rem; background: var(--paper); border-bottom: 1px solid var(--paper-line);
+}
+.data-table td { padding: 0.85rem 1.2rem; border-bottom: 1px solid var(--paper-line); vertical-align: middle; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: rgba(28,159,224,0.035); }
+.cell-name { font-weight: 500; }
+.cell-sub { display: block; font-size: 0.78rem; color: var(--slate); margin-top: 0.1rem; }
+ 
+.status-pill { display: inline-block; padding: 0.28rem 0.7rem; border-radius: 999px; font-size: 0.74rem; font-weight: 500; white-space: nowrap; }
+.status-pill.ok { background: rgba(46,154,108,0.14); color: var(--good); }
+.status-pill.pending { background: rgba(217,154,43,0.16); color: var(--amber); }
+.status-pill.overdue, .status-pill.critical { background: rgba(232,93,78,0.14); color: var(--pulse); }
+.status-pill.progress { background: rgba(28,159,224,0.14); color: var(--sky-600); }
+.status-pill.neutral { background: var(--paper); color: var(--slate); border: 1px solid var(--paper-line); }
+ 
+.stock-bar-wrap { display: flex; align-items: center; gap: 0.5rem; min-width: 110px; }
+.stock-bar { flex: 1; height: 6px; border-radius: 999px; background: var(--paper-line); overflow: hidden; }
+.stock-bar span { display: block; height: 100%; border-radius: 999px; }
+.stock-bar-wrap.ok .stock-bar span { background: var(--good); }
+.stock-bar-wrap.low .stock-bar span { background: var(--amber); }
+.stock-bar-wrap.critical .stock-bar span { background: var(--pulse); }
+.stock-bar-wrap .qty-label { font-size: 0.76rem; color: var(--slate); white-space: nowrap; }
+ 
+.icon-btn {
+  width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--paper-line);
+  background: #fff; color: var(--slate); display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background 0.15s, color 0.15s;
+}
+.icon-btn:hover { background: var(--sky-100); color: var(--sky-600); }
+.icon-btn svg { width: 15px; height: 15px; }
+.row-actions { display: flex; gap: 0.4rem; justify-content: flex-end; flex-wrap: wrap; }
+ 
+.btn-outline {
+  font-family: var(--font-body); font-size: 0.8rem; font-weight: 500;
+  background: #fff; border: 1px solid var(--paper-line); color: var(--ink);
+  padding: 0.45rem 0.8rem; border-radius: 8px; cursor: pointer; transition: background 0.15s;
+}
+.btn-outline:hover { background: var(--sky-100); }
+.btn-outline.dark { background: var(--sky-900); color: #fff; border-color: var(--sky-900); }
+.btn-outline.dark:hover { background: var(--sky-800); }
+.btn-outline.danger { color: var(--pulse); border-color: rgba(232,93,78,0.35); }
+.btn-outline.danger:hover { background: rgba(232,93,78,0.08); }
+ 
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 50;
+  background: rgba(10,53,84,0.45);
+  align-items: center; justify-content: center; padding: 1.5rem;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: #fff; border-radius: 16px; width: 100%; max-width: 500px;
+  max-height: 88vh; overflow-y: auto;
+  box-shadow: 0 30px 70px -20px rgba(10,53,84,0.5);
+}
+.modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--sky-900); color: #fff; padding: 1.2rem 1.4rem;
+  border-radius: 16px 16px 0 0;
+}
+.modal-head h3 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 1.15rem; }
+.modal-close {
+  width: 30px; height: 30px; border-radius: 50%; border: none;
+  background: rgba(255,255,255,0.15); color: #fff; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-close:hover { background: rgba(255,255,255,0.25); }
+.modal-close svg { width: 15px; height: 15px; }
+.modal-body { padding: 1.4rem; display: flex; flex-direction: column; gap: 1.05rem; }
+ 
+.field { display: flex; flex-direction: column; gap: 0.4rem; }
+.field label { font-size: 0.8rem; font-weight: 600; color: var(--ink); }
+.field input, .field select, .field textarea {
+  font-family: var(--font-body); font-size: 0.92rem;
+  padding: 0.68rem 0.85rem; border: 1px solid var(--paper-line); border-radius: 8px;
+  background: var(--paper); color: var(--ink); outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: var(--sky-500); background: #fff; box-shadow: 0 0 0 3px rgba(28,159,224,0.14);
+}
+.field-row { display: flex; gap: 0.9rem; }
+.field-row .field { flex: 1; }
+ 
+.rx-line { display: flex; gap: 0.6rem; align-items: flex-end; }
+.rx-line .field { flex: 1; margin: 0; }
+.rx-line .rm-line {
+  width: 38px; height: 38px; border-radius: 8px; border: 1px solid var(--paper-line);
+  background: #fff; color: var(--pulse); cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.rx-line .rm-line:hover { background: rgba(232,93,78,0.08); }
+.rx-line .rm-line svg { width: 14px; height: 14px; }
+.rx-lines { display: flex; flex-direction: column; gap: 0.7rem; }
+.add-line-btn {
+  align-self: flex-start; background: none; border: 1px dashed var(--paper-line);
+  color: var(--sky-600); font-size: 0.82rem; font-weight: 600; padding: 0.5rem 0.9rem;
+  border-radius: 8px; cursor: pointer;
+}
+.add-line-btn:hover { background: var(--sky-100); }
+ 
+.modal-actions { display: flex; justify-content: flex-end; gap: 0.7rem; padding-top: 0.3rem; }
+.btn-cancel {
+  font-family: var(--font-body); font-weight: 500; font-size: 0.9rem;
+  color: var(--slate); background: transparent; border: 1px solid var(--paper-line);
+  border-radius: 8px; padding: 0.65rem 1.1rem; cursor: pointer; transition: background 0.15s;
+}
+.btn-cancel:hover { background: var(--paper); }
+.btn-confirm {
+  font-family: var(--font-body); font-weight: 600; font-size: 0.9rem;
+  color: #fff; background: var(--sky-900); border: none; border-radius: 8px;
+  padding: 0.65rem 1.2rem; cursor: pointer; transition: background 0.15s;
+}
+.btn-confirm:hover { background: var(--sky-800); }
+ 
+@media (max-width: 1080px) {
+  .mini-stats { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 760px) {
+  .app-shell { flex-direction: column; }
+  .sidebar { width: 100%; height: auto; position: relative; flex-direction: row; align-items: center; overflow-x: auto; }
+  .sidebar-brand { padding: 0 1rem 0 0; }
+  .sidebar-nav { flex-direction: row; }
+  main { padding: 1.4rem 1.2rem 2.4rem; }
+  .topbar { padding: 1rem 1.2rem; }
+}
+@media (max-width: 640px) {
+  .mini-stats { grid-template-columns: 1fr; }
+  .field-row { flex-direction: column; }
+  .data-table { font-size: 0.82rem; }
+  .data-table th, .data-table td { padding: 0.7rem 0.8rem; }
+}
+</style>
+</head>
+<body>
+ 
+<div class="app-shell">
+ 
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="medisync_logo.jpeg" alt="MediSync logo">
+      <div class="brand-text">
+        <strong>MediSync</strong>
+        <span>Hospital Management System</span>
+      </div>
+    </div>
+ 
+    <nav class="sidebar-nav">
+      <a href="dashboard.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Dashboard
+      </a>
+      <a href="patients.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Patients
+      </a>
+      <a href="doctors.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg>
+        Doctors
+      </a>
+      <a href="billing.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 14h3"/></svg>
+        Billing
+      </a>
+      <a href="laboratory.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6.5L4.5 17a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L15 8.5V2"/><path d="M9 2h6M8.5 13h7"/></svg>
+        Laboratory
+      </a>
+      <a href="pharmacy.html" class="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v8"/><path d="M3 14h18l-1.5 6.5a2 2 0 0 1-2 1.5H6.5a2 2 0 0 1-2-1.5L3 14Z"/></svg>
+        Pharmacy
+      </a>
+      <a href="contact.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.68 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.32 1.85.55 2.81.68A2 2 0 0 1 22 16.92Z"/></svg>
+        Contact Us
+      </a>
+      <a href="Appointment.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M9 16l2 2 4-4"/></svg>
+        Appointment
+      </a>
+      <a href="Feedback.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Feedback
+      </a>
+      <a href="Medisync Chat.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg>
+        Medisync Chat
+      </a>
+      <a href="about.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        About Us
+      </a>
+    </nav>
+  </aside>
+ 
+  <div class="main-area">
+ 
+    <header class="topbar">
+      <div>
+        <h1>Pharmacy</h1>
+        <p>Manage medicine inventory, prescriptions, stock, and expiry.</p>
+      </div>
+      <div class="topbar-right">
+        <a href="login_page.html" class="profile-link" title="Login / Logout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+        </a>
+      </div>
+    </header>
+ 
+    <main>
+ 
+      <div class="view-tabs" role="tablist">
+        <button class="view-tab active" data-view="inventory" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v8"/><path d="M3 14h18l-1.5 6.5a2 2 0 0 1-2 1.5H6.5a2 2 0 0 1-2-1.5L3 14Z"/></svg>
+          Medicine Inventory
+        </button>
+        <button class="view-tab" data-view="prescriptions" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h4"/></svg>
+          Prescription Processing
+        </button>
+        <button class="view-tab" data-view="stock" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2"/><path d="M3 8h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M8 12h8"/></svg>
+          Stock Management
+        </button>
+        <button class="view-tab" data-view="expiry" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          Expiry Monitoring
+        </button>
+      </div>
+      <div class="appt-view active" id="view-inventory">
+        <div class="mini-stats">
+          <div class="mini-card accent"><p class="label">Total SKUs</p><p class="value">214</p></div>
+          <div class="mini-card warn"><p class="label">Low Stock</p><p class="value">12</p></div>
+          <div class="mini-card alert"><p class="label">Out of Stock</p><p class="value">3</p></div>
+          <div class="mini-card"><p class="label">Inventory Value</p><p class="value">Rs. 1.4M</p></div>
+        </div>
+ 
+        <div class="toolbar">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="invSearch" placeholder="Search medicines&hellip;">
+          </div>
+          <select class="filter-select" id="invCategoryFilter">
+            <option value="">All categories</option>
+            <option>Analgesic</option>
+            <option>Antibiotic</option>
+            <option>Cardiac</option>
+            <option>Respiratory</option>
+            <option>IV Fluids</option>
+          </select>
+          <button class="btn-primary" type="button" id="openAddMedicine">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Add Medicine
+          </button>
+        </div>
+ 
+        <div class="panel">
+          <table class="data-table" id="inventoryTable">
+            <thead>
+              <tr><th>Medicine</th><th>Category</th><th>Form</th><th>Unit Price</th><th>Stock Level</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody id="inventoryBody"></tbody>
+          </table>
+        </div>
+      </div>
+ 
+      <div class="appt-view" id="view-prescriptions">
+        <div class="mini-stats">
+          <div class="mini-card accent"><p class="label">Dispensed Today</p><p class="value">31</p></div>
+          <div class="mini-card warn"><p class="label">Pending</p><p class="value">7</p></div>
+          <div class="mini-card"><p class="label">Processing</p><p class="value">4</p></div>
+          <div class="mini-card"><p class="label">Total This Month</p><p class="value">642</p></div>
+        </div>
+ 
+        <div class="toolbar">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="rxSearch" placeholder="Search by patient or prescription no&hellip;">
+          </div>
+          <select class="filter-select" id="rxStatusFilter">
+            <option value="">All statuses</option>
+            <option>Pending</option>
+            <option>Processing</option>
+            <option>Dispensed</option>
+          </select>
+        </div>
+ 
+        <div class="panel">
+          <table class="data-table" id="rxTable">
+            <thead>
+              <tr><th>Rx No.</th><th>Patient</th><th>Doctor</th><th>Medicines</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody id="rxBody"></tbody>
+          </table>
+        </div>
+      </div>
+ 
+      <div class="appt-view" id="view-stock">
+        <div class="mini-stats">
+          <div class="mini-card accent"><p class="label">Restocked This Week</p><p class="value">9</p></div>
+          <div class="mini-card warn"><p class="label">Below Reorder Level</p><p class="value">12</p></div>
+          <div class="mini-card"><p class="label">Suppliers Active</p><p class="value">6</p></div>
+          <div class="mini-card alert"><p class="label">Pending Orders</p><p class="value">3</p></div>
+        </div>
+ 
+        <div class="toolbar">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="stockSearch" placeholder="Search medicines&hellip;">
+          </div>
+          <select class="filter-select" id="stockLevelFilter">
+            <option value="">All stock levels</option>
+            <option>Out of stock</option>
+            <option>Low stock</option>
+            <option>In stock</option>
+          </select>
+        </div>
+ 
+        <div class="panel">
+          <table class="data-table" id="stockTable">
+            <thead>
+              <tr><th>Medicine</th><th>Current Stock</th><th>Reorder Level</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody id="stockBody"></tbody>
+          </table>
+        </div>
+      </div>
+ 
+      <div class="appt-view" id="view-expiry">
+        <div class="mini-stats">
+          <div class="mini-card alert"><p class="label">Expired</p><p class="value">2</p></div>
+          <div class="mini-card warn"><p class="label">Expiring in 30 Days</p><p class="value">8</p></div>
+          <div class="mini-card"><p class="label">Expiring in 90 Days</p><p class="value">21</p></div>
+          <div class="mini-card accent"><p class="label">Batches Tracked</p><p class="value">96</p></div>
+        </div>
+ 
+        <div class="toolbar">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="expSearch" placeholder="Search by medicine or batch number&hellip;">
+          </div>
+          <select class="filter-select" id="expStatusFilter">
+            <option value="">All statuses</option>
+            <option>Expired</option>
+            <option>Expiring Soon</option>
+            <option>OK</option>
+          </select>
+        </div>
+ 
+        <div class="panel">
+          <table class="data-table" id="expiryTable">
+            <thead>
+              <tr><th>Medicine</th><th>Batch No.</th><th>Quantity</th><th>Expiry Date</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody id="expiryBody"></tbody>
+          </table>
+        </div>
+      </div>
+ 
+    </main>
+  </div>
+</div>
+ 
+<div class="modal-overlay" id="medicineModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="medicineModalTitle">Add Medicine</h3>
+      <button class="modal-close" data-close-modal="medicineModal" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="medicineForm" novalidate>
+        <div class="field">
+          <label for="mName">Medicine Name</label>
+          <input type="text" id="mName" placeholder="e.g. Amoxicillin 500mg">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="mCategory">Category</label>
+            <select id="mCategory">
+              <option value="">Select category</option>
+              <option>Analgesic</option>
+              <option>Antibiotic</option>
+              <option>Cardiac</option>
+              <option>Respiratory</option>
+              <option>IV Fluids</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="mForm">Form</label>
+            <select id="mForm">
+              <option value="">Select form</option>
+              <option>Tablet</option>
+              <option>Capsule</option>
+              <option>Syrup</option>
+              <option>Injection</option>
+              <option>Inhaler</option>
+              <option>IV Bag</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="mPrice">Unit Price (Rs.)</label>
+            <input type="number" id="mPrice" min="0" step="0.01" placeholder="0.00">
+          </div>
+          <div class="field">
+            <label for="mQty">Quantity in Stock</label>
+            <input type="number" id="mQty" min="0" placeholder="0">
+          </div>
+        </div>
+        <div class="field">
+          <label for="mReorder">Reorder Threshold</label>
+          <input type="number" id="mReorder" min="0" placeholder="e.g. 100">
+        </div>
+ 
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" data-close-modal="medicineModal">Cancel</button>
+          <button type="submit" class="btn-confirm" id="medicineSubmitBtn">Save Medicine</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+ 
+<div class="modal-overlay" id="rxModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Process Prescription &mdash; <span id="rxModalPatient">Patient</span></h3>
+      <button class="modal-close" data-close-modal="rxModal" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Prescribed Medicines</label>
+        <div class="rx-lines" id="rxLinesView"></div>
+      </div>
+      <div class="field">
+        <label for="rxStatusSelect">Update Status</label>
+        <select id="rxStatusSelect">
+          <option>Pending</option>
+          <option>Processing</option>
+          <option>Dispensed</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" data-close-modal="rxModal">Close</button>
+        <button type="button" class="btn-confirm" id="rxSaveStatus">Update</button>
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<div class="modal-overlay" id="restockModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Log Stock Received &mdash; <span id="restockMedName">Medicine</span></h3>
+      <button class="modal-close" data-close-modal="restockModal" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="restockForm" novalidate>
+        <div class="field-row">
+          <div class="field">
+            <label for="rQty">Quantity Received</label>
+            <input type="number" id="rQty" min="1" placeholder="e.g. 200">
+          </div>
+          <div class="field">
+            <label for="rDate">Date Received</label>
+            <input type="date" id="rDate">
+          </div>
+        </div>
+        <div class="field">
+          <label for="rSupplier">Supplier</label>
+          <input type="text" id="rSupplier" placeholder="e.g. Ceylon Pharma Distributors">
+        </div>
+        <div class="field">
+          <label for="rBatch">Batch Number</label>
+          <input type="text" id="rBatch" placeholder="e.g. BT-2291">
+        </div>
+        <div class="field">
+          <label for="rExpiry">Expiry Date</label>
+          <input type="date" id="rExpiry">
+        </div>
+ 
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" data-close-modal="restockModal">Cancel</button>
+          <button type="submit" class="btn-confirm">Save Stock Entry</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+ 
+<script>
+  
+  var tabs = document.querySelectorAll('.view-tab');
+  var views = document.querySelectorAll('.appt-view');
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      tabs.forEach(function (t) { t.classList.remove('active'); });
+      views.forEach(function (v) { v.classList.remove('active'); });
+      tab.classList.add('active');
+      document.getElementById('view-' + tab.getAttribute('data-view')).classList.add('active');
+    });
+  });
+ 
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  document.querySelectorAll('[data-close-modal]').forEach(function (btn) {
+    btn.addEventListener('click', function () { closeModal(btn.getAttribute('data-close-modal')); });
+  });
+  document.querySelectorAll('.modal-overlay').forEach(function (overlay) {
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.classList.remove('open'); });
+  });
+ 
+  var iconEye = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+  var iconEdit = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+ 
+  var inventory = [
+    { id: 1, name: 'Paracetamol 500mg', category: 'Analgesic', form: 'Tablet', price: 5.5, qty: 860, reorder: 200 },
+    { id: 2, name: 'Amoxicillin 500mg', category: 'Antibiotic', form: 'Capsule', price: 18, qty: 48, reorder: 100 },
+    { id: 3, name: 'Insulin (Rapid-acting)', category: 'Cardiac', form: 'Injection', price: 420, qty: 0, reorder: 30 },
+    { id: 4, name: 'Salbutamol Inhaler', category: 'Respiratory', form: 'Inhaler', price: 650, qty: 15, reorder: 40 },
+    { id: 5, name: 'Normal Saline 0.9%', category: 'IV Fluids', form: 'IV Bag', price: 220, qty: 0, reorder: 50 },
+    { id: 6, name: 'Paracetamol IV', category: 'Analgesic', form: 'Injection', price: 340, qty: 120, reorder: 60 },
+    { id: 7, name: 'Atorvastatin 20mg', category: 'Cardiac', form: 'Tablet', price: 22, qty: 310, reorder: 100 }
+  ];
+  var nextInvId = 8;
+ 
+  function stockStatus(m) {
+    if (m.qty <= 0) return { label: 'Out of Stock', pill: 'critical', bar: 'critical' };
+    if (m.qty <= m.reorder) return { label: 'Low Stock', pill: 'pending', bar: 'low' };
+    return { label: 'In Stock', pill: 'ok', bar: 'ok' };
+  }
+ 
+  function renderInventory() {
+    var q = document.getElementById('invSearch').value.trim().toLowerCase();
+    var cat = document.getElementById('invCategoryFilter').value;
+    var body = document.getElementById('inventoryBody');
+    body.innerHTML = '';
+ 
+    inventory
+      .filter(function (m) { return (!q || m.name.toLowerCase().indexOf(q) !== -1) && (!cat || m.category === cat); })
+      .forEach(function (m) {
+        var st = stockStatus(m);
+        var pct = Math.min(100, Math.round((m.qty / (m.reorder * 2 || 1)) * 100));
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td class="cell-name">' + m.name + '</td>' +
+          '<td>' + m.category + '</td>' +
+          '<td>' + m.form + '</td>' +
+          '<td>Rs. ' + m.price.toFixed(2) + '</td>' +
+          '<td><div class="stock-bar-wrap ' + st.bar + '"><div class="stock-bar"><span style="width:' + pct + '%;"></span></div><span class="qty-label">' + m.qty + '</span></div></td>' +
+          '<td><span class="status-pill ' + st.pill + '">' + st.label + '</span></td>' +
+          '<td><div class="row-actions">' +
+            '<button class="icon-btn" data-restock="' + m.id + '" title="Log stock received">' + iconEdit + '</button>' +
+          '</div></td>';
+        body.appendChild(tr);
+      });
+  }
+  document.getElementById('invSearch').addEventListener('input', renderInventory);
+  document.getElementById('invCategoryFilter').addEventListener('change', renderInventory);
+ 
+  document.getElementById('openAddMedicine').addEventListener('click', function () {
+    document.getElementById('medicineModalTitle').textContent = 'Add Medicine';
+    document.getElementById('medicineForm').reset();
+    openModal('medicineModal');
+  });
+ 
+  document.getElementById('medicineForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = document.getElementById('mName').value.trim();
+    if (!name) { alert('Please enter a medicine name.'); return; }
+    inventory.push({
+      id: nextInvId++,
+      name: name,
+      category: document.getElementById('mCategory').value || 'Uncategorized',
+      form: document.getElementById('mForm').value || '—',
+      price: parseFloat(document.getElementById('mPrice').value) || 0,
+      qty: parseInt(document.getElementById('mQty').value, 10) || 0,
+      reorder: parseInt(document.getElementById('mReorder').value, 10) || 0
+    });
+    renderInventory();
+    renderStock();
+    closeModal('medicineModal');
+  });
+ 
+  var prescriptions = [
+    { no: 'RX-4021', patient: 'R. Fernando', doctor: 'Dr. Perera', status: 'Pending', lines: [
+      { med: 'Amoxicillin 500mg', dose: '1 cap, 3x daily, 7 days' },
+      { med: 'Paracetamol 500mg', dose: '1 tab, as needed for fever' }
+    ] },
+    { no: 'RX-4020', patient: 'S. Wickramasinghe', doctor: 'Dr. Jayawardena', status: 'Processing', lines: [
+      { med: 'Salbutamol Inhaler', dose: '2 puffs, 2x daily' }
+    ] },
+    { no: 'RX-4019', patient: 'M. Jayasuriya', doctor: 'Dr. Silva', status: 'Dispensed', lines: [
+      { med: 'Atorvastatin 20mg', dose: '1 tab, nightly' },
+      { med: 'Normal Saline 0.9%', dose: '1 bag, IV infusion' }
+    ] },
+    { no: 'RX-4018', patient: 'A. Silva', doctor: 'Dr. Fernando', status: 'Pending', lines: [
+      { med: 'Insulin (Rapid-acting)', dose: '10 units before meals' }
+    ] }
+  ];
+ 
+  function renderRx() {
+    var q = document.getElementById('rxSearch').value.trim().toLowerCase();
+    var status = document.getElementById('rxStatusFilter').value;
+    var body = document.getElementById('rxBody');
+    body.innerHTML = '';
+ 
+    prescriptions
+      .filter(function (r) {
+        return (!q || r.patient.toLowerCase().indexOf(q) !== -1 || r.no.toLowerCase().indexOf(q) !== -1) &&
+               (!status || r.status === status);
+      })
+      .forEach(function (r) {
+        var pillClass = r.status === 'Dispensed' ? 'ok' : (r.status === 'Processing' ? 'progress' : 'pending');
+        var medsSummary = r.lines.map(function (l) { return l.med; }).join(', ');
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td class="cell-name">' + r.no + '</td>' +
+          '<td>' + r.patient + '</td>' +
+          '<td>' + r.doctor + '</td>' +
+          '<td>' + medsSummary + '</td>' +
+          '<td><span class="status-pill ' + pillClass + '">' + r.status + '</span></td>' +
+          '<td><div class="row-actions"><button class="icon-btn" data-process-rx="' + r.no + '" title="Process">' + iconEye + '</button></div></td>';
+        body.appendChild(tr);
+      });
+  }
+  document.getElementById('rxSearch').addEventListener('input', renderRx);
+  document.getElementById('rxStatusFilter').addEventListener('change', renderRx);
+ 
+  var activeRxNo = null;
+  document.getElementById('rxBody').addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-process-rx]');
+    if (!btn) return;
+    var no = btn.getAttribute('data-process-rx');
+    var rx = prescriptions.find(function (r) { return r.no === no; });
+    activeRxNo = no;
+    document.getElementById('rxModalPatient').textContent = rx.patient + ' (' + rx.no + ')';
+    document.getElementById('rxLinesView').innerHTML = rx.lines.map(function (l) {
+      return '<div class="rx-line"><div class="field"><label>' + l.med + '</label><input type="text" value="' + l.dose + '" readonly></div></div>';
+    }).join('');
+    document.getElementById('rxStatusSelect').value = rx.status;
+    openModal('rxModal');
+  });
+ 
+  document.getElementById('rxSaveStatus').addEventListener('click', function () {
+    if (!activeRxNo) return;
+    var rx = prescriptions.find(function (r) { return r.no === activeRxNo; });
+    rx.status = document.getElementById('rxStatusSelect').value;
+    renderRx();
+    closeModal('rxModal');
+  });
+ 
+  function renderStock() {
+    var q = document.getElementById('stockSearch').value.trim().toLowerCase();
+    var level = document.getElementById('stockLevelFilter').value;
+    var body = document.getElementById('stockBody');
+    body.innerHTML = '';
+ 
+    inventory
+      .filter(function (m) {
+        var st = stockStatus(m).label.toLowerCase();
+        var matchesLevel = !level || st.indexOf(level.toLowerCase()) !== -1 ||
+          (level === 'In stock' && st === 'in stock') ||
+          (level === 'Low stock' && st === 'low stock') ||
+          (level === 'Out of stock' && st === 'out of stock');
+        return (!q || m.name.toLowerCase().indexOf(q) !== -1) && matchesLevel;
+      })
+      .forEach(function (m) {
+        var st = stockStatus(m);
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td class="cell-name">' + m.name + '</td>' +
+          '<td>' + m.qty + '</td>' +
+          '<td>' + m.reorder + '</td>' +
+          '<td><span class="status-pill ' + st.pill + '">' + st.label + '</span></td>' +
+          '<td><div class="row-actions"><button class="btn-outline dark" data-restock2="' + m.id + '">Log Stock</button></div></td>';
+        body.appendChild(tr);
+      });
+  }
+  document.getElementById('stockSearch').addEventListener('input', renderStock);
+  document.getElementById('stockLevelFilter').addEventListener('change', renderStock);
+ 
+  var activeRestockId = null;
+  function openRestock(id) {
+    var m = inventory.find(function (x) { return x.id === Number(id); });
+    if (!m) return;
+    activeRestockId = m.id;
+    document.getElementById('restockMedName').textContent = m.name;
+    document.getElementById('restockForm').reset();
+    openModal('restockModal');
+  }
+  document.getElementById('inventoryBody').addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-restock]');
+    if (btn) openRestock(btn.getAttribute('data-restock'));
+  });
+  document.getElementById('stockBody').addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-restock2]');
+    if (btn) openRestock(btn.getAttribute('data-restock2'));
+  });
+ 
+  document.getElementById('restockForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (!activeRestockId) return;
+    var m = inventory.find(function (x) { return x.id === activeRestockId; });
+    var qty = parseInt(document.getElementById('rQty').value, 10) || 0;
+    m.qty += qty;
+ 
+    var expiry = document.getElementById('rExpiry').value;
+    var batch = document.getElementById('rBatch').value.trim();
+    if (expiry) {
+      expiryBatches.push({
+        id: nextExpiryId++,
+        medicine: m.name,
+        batch: batch || ('BT-' + Math.floor(1000 + Math.random() * 9000)),
+        qty: qty,
+        expiry: expiry
+      });
+      renderExpiry();
+    }
+ 
+    renderInventory();
+    renderStock();
+    closeModal('restockModal');
+  });
+  var expiryBatches = [
+    { id: 1, medicine: 'Paracetamol IV', batch: 'PC-2291', qty: 120, expiry: '2026-09-12' },
+    { id: 2, medicine: 'Amoxicillin 500mg', batch: 'AM-1187', qty: 48, expiry: '2026-09-04' },
+    { id: 3, medicine: 'Normal Saline 0.9%', batch: 'NS-0087', qty: 0, expiry: '2026-08-20' },
+    { id: 4, medicine: 'Insulin (Rapid-acting)', batch: 'IN-3345', qty: 0, expiry: '2026-08-05' },
+    { id: 5, medicine: 'Salbutamol Inhaler', batch: 'SB-2210', qty: 15, expiry: '2026-12-18' },
+    { id: 6, medicine: 'Atorvastatin 20mg', batch: 'AT-5502', qty: 310, expiry: '2027-03-01' }
+  ];
+  var nextExpiryId = 7;
+ 
+  function daysUntil(dateStr) {
+    var today = new Date('2026-09-01');
+    var target = new Date(dateStr);
+    return Math.round((target - today) / (1000 * 60 * 60 * 24));
+  }
+  function expiryStatus(dateStr) {
+    var d = daysUntil(dateStr);
+    if (d < 0) return { label: 'Expired', pill: 'critical' };
+    if (d <= 30) return { label: 'Expiring Soon', pill: 'pending' };
+    return { label: 'OK', pill: 'ok' };
+  }
+  function formatDate(iso) {
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var p = iso.split('-');
+    return parseInt(p[2],10) + ' ' + months[parseInt(p[1],10)-1] + ' ' + p[0];
+  }
+ 
+  function renderExpiry() {
+    var q = document.getElementById('expSearch').value.trim().toLowerCase();
+    var status = document.getElementById('expStatusFilter').value;
+    var body = document.getElementById('expiryBody');
+    body.innerHTML = '';
+ 
+    expiryBatches
+      .slice()
+      .sort(function (a, b) { return new Date(a.expiry) - new Date(b.expiry); })
+      .filter(function (b) {
+        var st = expiryStatus(b.expiry);
+        return (!q || b.medicine.toLowerCase().indexOf(q) !== -1 || b.batch.toLowerCase().indexOf(q) !== -1) &&
+               (!status || st.label === status);
+      })
+      .forEach(function (b) {
+        var st = expiryStatus(b.expiry);
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td class="cell-name">' + b.medicine + '</td>' +
+          '<td>' + b.batch + '</td>' +
+          '<td>' + b.qty + '</td>' +
+          '<td>' + formatDate(b.expiry) + '</td>' +
+          '<td><span class="status-pill ' + st.pill + '">' + st.label + '</span></td>' +
+          '<td><div class="row-actions"><button class="icon-btn" title="View"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></td>';
+        body.appendChild(tr);
+      });
+  }
+  document.getElementById('expSearch').addEventListener('input', renderExpiry);
+  document.getElementById('expStatusFilter').addEventListener('change', renderExpiry);
+ 
+  renderInventory();
+  renderRx();
+  renderStock();
+  renderExpiry();
+</script>
+ 
+</body>
+</html>

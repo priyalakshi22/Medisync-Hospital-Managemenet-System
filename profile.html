@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Profile — MediSync HMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sky-900: #0a3554; --sky-800: #0d4266; --sky-700: #10557f; --sky-600: #1478a8;
+  --sky-500: #1c9fe0; --sky-400: #3fb6ea; --sky-300: #7ccdf0; --sky-100: #e4f4fb;
+  --paper: #f2f8fb; --paper-line: #dbe8ef; --ink: #142c3a; --slate: #5c7284; --slate-light: #94a8b6;
+  --pulse: #e85d4e; --amber: #d99a2b; --good: #2e9a6c;
+  --font-display: "Fraunces", "Iowan Old Style", serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; min-height: 100vh; background: var(--paper); color: var(--ink); font-family: var(--font-body); }
+a { color: inherit; text-decoration: none; }
+button, select, input, textarea { font-family: var(--font-body); }
+.app-shell { display: flex; min-height: 100vh; }
+ 
+.sidebar {
+  width: 240px; flex-shrink: 0;
+  background: linear-gradient(180deg, var(--sky-900), var(--sky-800));
+  color: #eaf5fb; display: flex; flex-direction: column; padding: 1.6rem 1.1rem;
+  position: sticky; top: 0; height: 100vh;
+}
+.sidebar-brand { display: flex; align-items: center; gap: 0.7rem; padding: 0 0.4rem 1.6rem; }
+.sidebar-brand .logo-mark {
+  width: 42px; height: 42px; border-radius: 11px; background: rgba(255,255,255,0.95);
+  display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;
+}
+.sidebar-brand .logo-mark img { width: 100%; height: 100%; object-fit: contain; }
+.sidebar-brand .brand-text strong { display: block; font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; }
+.sidebar-brand .brand-text span { display: block; font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sky-300); margin-top: 0.1rem; }
+.sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
+.sidebar-nav a { display: flex; align-items: center; gap: 0.75rem; padding: 0.68rem 0.8rem; border-radius: 10px; font-size: 0.9rem; font-weight: 500; color: rgba(234,245,251,0.82); transition: background 0.15s, color 0.15s; }
+.sidebar-nav a svg { width: 18px; height: 18px; flex-shrink: 0; }
+.sidebar-nav a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.sidebar-nav a.active { background: var(--sky-500); color: #fff; }
+.sidebar-logout { display: flex; align-items: center; gap: 0.75rem; padding: 0.68rem 0.8rem; border-radius: 10px; font-size: 0.9rem; font-weight: 500; color: rgba(234,245,251,0.72); background: none; border: none; width: 100%; cursor: pointer; }
+.sidebar-logout svg { width: 18px; height: 18px; }
+.sidebar-logout:hover { background: rgba(232,93,78,0.18); color: #ffb3a8; }
+ 
+.main-area { flex: 1; min-width: 0; }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.3rem 2.2rem; background: #fff; border-bottom: 1px solid var(--paper-line); flex-wrap: wrap; }
+.topbar h1 { font-family: var(--font-display); font-weight: 600; font-size: 1.55rem; margin: 0; }
+.topbar p { margin: 0.2rem 0 0; font-size: 0.85rem; color: var(--slate); }
+.profile-link { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px var(--sky-100); }
+.profile-link img { width: 100%; height: 100%; object-fit: cover; }
+main { padding: 2rem 2.2rem 3rem; max-width: 900px; }
+ 
+.profile-hero {
+  background: #fff; border: 1px solid var(--paper-line); border-radius: 16px;
+  padding: 1.6rem 1.8rem; display: flex; align-items: center; gap: 1.4rem; margin-bottom: 1.6rem; flex-wrap: wrap;
+}
+.avatar-wrap { position: relative; width: 84px; height: 84px; flex-shrink: 0; }
+.avatar-wrap img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid var(--sky-100); }
+.avatar-upload-btn {
+  position: absolute; right: -2px; bottom: -2px; width: 30px; height: 30px; border-radius: 50%;
+  background: var(--sky-500); color: #fff; border: 2px solid #fff; display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.avatar-upload-btn svg { width: 14px; height: 14px; }
+.avatar-upload-btn input { display: none; }
+.profile-hero-info { flex: 1; min-width: 200px; }
+.profile-hero-info h2 { margin: 0 0 0.2rem; font-family: var(--font-display); font-weight: 600; font-size: 1.3rem; }
+.profile-hero-info .role-line { font-size: 0.86rem; color: var(--slate); margin: 0 0 0.5rem; }
+.role-badge {
+  display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; font-weight: 700;
+  padding: 0.22rem 0.65rem; border-radius: 999px; background: var(--sky-100); color: var(--sky-800);
+}
+ 
+.tabs { display: flex; gap: 0.4rem; margin-bottom: 1.4rem; flex-wrap: wrap; border-bottom: 1px solid var(--paper-line); }
+.tab-btn {
+  border: none; background: none; padding: 0.75rem 1.1rem; font-size: 0.88rem; font-weight: 600;
+  color: var(--slate); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.tab-btn.active { color: var(--sky-700); border-bottom-color: var(--sky-500); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+ 
+.panel-card { background: #fff; border: 1px solid var(--paper-line); border-radius: 14px; padding: 1.5rem 1.6rem; margin-bottom: 1.2rem; }
+.panel-card h3 { margin: 0 0 1.1rem; font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; color: var(--sky-900); }
+ 
+.field { margin-bottom: 1rem; }
+.field label { display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.4rem; }
+.field input, .field select, .field textarea {
+  width: 100%; padding: 0.68rem 0.85rem; border-radius: 9px; border: 1px solid var(--paper-line);
+  background: var(--paper); font-size: 0.88rem; color: var(--ink);
+}
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--sky-400); box-shadow: 0 0 0 3px var(--sky-100); background: #fff; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+ 
+.btn-primary { background: var(--sky-900); color: #fff; border: none; padding: 0.68rem 1.3rem; border-radius: 9px; font-size: 0.87rem; font-weight: 600; cursor: pointer; }
+.btn-primary:hover { background: var(--sky-800); }
+.btn-secondary { background: var(--paper); border: 1px solid var(--paper-line); color: var(--ink); padding: 0.68rem 1.3rem; border-radius: 9px; font-size: 0.87rem; font-weight: 600; cursor: pointer; }
+.btn-secondary:hover { background: #e9eff3; }
+.btn-danger { background: var(--pulse); color: #fff; border: none; padding: 0.68rem 1.3rem; border-radius: 9px; font-size: 0.87rem; font-weight: 600; cursor: pointer; }
+.btn-danger:hover { background: #cb4c3f; }
+.form-actions { display: flex; gap: 0.7rem; justify-content: flex-end; margin-top: 0.4rem; }
+ 
+.save-flash { display: none; background: rgba(46,154,108,0.12); color: var(--good); border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.84rem; font-weight: 600; margin-bottom: 1rem; }
+.save-flash.show { display: block; }
+ 
+.pw-hint { font-size: 0.76rem; color: var(--slate); margin-top: 0.3rem; }
+ 
+.role-list { display: flex; flex-direction: column; gap: 0.7rem; }
+.role-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  border: 1px solid var(--paper-line); border-radius: 10px; padding: 0.85rem 1rem; flex-wrap: wrap;
+}
+.role-row .rr-name { font-weight: 700; font-size: 0.9rem; }
+.role-row .rr-desc { font-size: 0.78rem; color: var(--slate); margin-top: 0.1rem; }
+.role-row.current { border-color: var(--sky-400); background: var(--sky-100); }
+.perm-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem 1.2rem; margin-top: 0.8rem; }
+.perm-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+.perm-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+.perm-item.on { color: var(--good); }
+.perm-item.off { color: var(--slate-light); }
+ 
+
+.session-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.8rem 0; border-bottom: 1px solid var(--paper-line); flex-wrap: wrap; }
+.session-row:last-child { border-bottom: none; }
+.session-row .sr-device { font-weight: 600; font-size: 0.86rem; }
+.session-row .sr-meta { font-size: 0.78rem; color: var(--slate); }
+.session-tag { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; padding: 0.2rem 0.55rem; border-radius: 999px; background: rgba(46,154,108,0.14); color: var(--good); }
+ 
+@media (max-width: 760px) {
+  .app-shell { flex-direction: column; }
+  .sidebar { width: 100%; height: auto; position: relative; flex-direction: row; align-items: center; overflow-x: auto; }
+  .sidebar-brand { padding: 0 1rem 0 0; }
+  .sidebar-nav { flex-direction: row; }
+  .sidebar-logout { display: none; }
+  main { padding: 1.4rem 1.2rem 2.4rem; }
+  .topbar { padding: 1rem 1.2rem; }
+  .field-row { grid-template-columns: 1fr; }
+  .perm-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+ 
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo-mark"><img src="medisync_logo.jpeg" alt="MediSync logo"></div>
+      <div class="brand-text"><strong>MediSync</strong><span>Hospital Management</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Dashboard
+      </a>
+      <a href="patients.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Patients
+      </a>
+      <a href="staff.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Staff
+      </a>
+      <a href="billing.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 14h3"/></svg>
+        Billing
+      </a>
+      <a href="laboratory.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6.5L4.5 17a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L15 8.5V2"/><path d="M9 2h6M8.5 13h7"/></svg>
+        Laboratory
+      </a>
+      <a href="profile.html" class="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+        My Profile
+      </a>
+    </nav>
+    <button type="button" class="sidebar-logout" id="sidebarLogoutBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </button>
+  </aside>
+ 
+  <div class="main-area">
+    <header class="topbar">
+      <div>
+        <h1>My Profile</h1>
+        <p>Account settings, password, roles, and access control.</p>
+      </div>
+      <div class="topbar-right">
+        <a href="profile.html" class="profile-link" title="My Profile"><img src="profile_icon.jpg" alt="Profile" id="topbarAvatar"></a>
+      </div>
+    </header>
+ 
+    <main>
+ 
+      <div class="profile-hero">
+        <div class="avatar-wrap">
+          <img src="profile_icon.jpg" alt="Profile photo" id="heroAvatar">
+          <label class="avatar-upload-btn" title="Change photo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg>
+            <input type="file" id="avatarInput" accept="image/*">
+          </label>
+        </div>
+        <div class="profile-hero-info">
+          <h2 id="heroName">Admin User</h2>
+          <p class="role-line" id="heroEmail">admin@medisync.com</p>
+          <span class="role-badge" id="heroRole">Administrator</span>
+        </div>
+      </div>
+ 
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="tab-profile" type="button">User Profile</button>
+        <button class="tab-btn" data-tab="tab-password" type="button">Password</button>
+        <button class="tab-btn" data-tab="tab-roles" type="button">Roles &amp; Access</button>
+        <button class="tab-btn" data-tab="tab-sessions" type="button">Login &amp; Sessions</button>
+      </div>
+ 
+      <div class="tab-panel active" id="tab-profile">
+        <div class="panel-card">
+          <h3>Edit Profile</h3>
+          <div class="save-flash" id="profileFlash">Profile updated.</div>
+          <form id="profileForm">
+            <div class="field-row">
+              <div class="field"><label>Full Name</label><input type="text" id="p-name" value="Admin User"></div>
+              <div class="field"><label>Username</label><input type="text" id="p-username" value="admin"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Email</label><input type="email" id="p-email" value="admin@medisync.com"></div>
+              <div class="field"><label>Phone</label><input type="tel" id="p-phone" placeholder="(077) 000 0000"></div>
+            </div>
+            <div class="field"><label>Department</label><input type="text" id="p-dept" placeholder="e.g. Administration"></div>
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+ 
+      <div class="tab-panel" id="tab-password">
+        <div class="panel-card">
+          <h3>Change Password</h3>
+          <div class="save-flash" id="passwordFlash">Password updated.</div>
+          <form id="passwordForm">
+            <div class="field"><label>Current Password</label><input type="password" id="pw-current" placeholder="Enter current password"></div>
+            <div class="field-row">
+              <div class="field"><label>New Password</label><input type="password" id="pw-new" placeholder="At least 8 characters"></div>
+              <div class="field"><label>Confirm New Password</label><input type="password" id="pw-confirm" placeholder="Re-enter new password"></div>
+            </div>
+            <p class="pw-hint">Use at least 8 characters, including a number — for a real deployment, this should be enforced and verified server-side.</p>
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">Update Password</button>
+            </div>
+          </form>
+        </div>
+      </div>
+ 
+      <div class="tab-panel" id="tab-roles">
+        <div class="panel-card">
+          <h3>Your Role</h3>
+          <div class="role-list">
+            <div class="role-row current">
+              <div>
+                <div class="rr-name">Administrator</div>
+                <div class="rr-desc">Full access to all modules, user management, and system settings.</div>
+              </div>
+              <span class="role-badge">Current Role</span>
+            </div>
+          </div>
+          <div class="perm-grid">
+            <span class="perm-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Patient records</span>
+            <span class="perm-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Billing &amp; payments</span>
+            <span class="perm-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Laboratory workflow</span>
+            <span class="perm-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Staff management</span>
+            <span class="perm-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>User &amp; role management</span>
+            <span class="perm-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>System reports</span>
+          </div>
+        </div>
+ 
+        <div class="panel-card">
+          <h3>All System Roles</h3>
+          <div class="role-list">
+            <div class="role-row"><div><div class="rr-name">Doctor</div><div class="rr-desc">Patient records, diagnosis, prescriptions, lab result review.</div></div></div>
+            <div class="role-row"><div><div class="rr-name">Nurse</div><div class="rr-desc">Patient records, vitals, appointment check-in, sample collection.</div></div></div>
+            <div class="role-row"><div><div class="rr-name">Receptionist</div><div class="rr-desc">Patient registration, appointment scheduling, billing front desk.</div></div></div>
+            <div class="role-row"><div><div class="rr-name">Lab Technician</div><div class="rr-desc">Test requests, sample collection, result entry, report generation.</div></div></div>
+            <div class="role-row"><div><div class="rr-name">Pharmacist</div><div class="rr-desc">Prescription processing, medicine inventory, dispensing.</div></div></div>
+            <div class="role-row"><div><div class="rr-name">Accountant</div><div class="rr-desc">Billing, invoicing, payment recording, financial reports.</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="tab-sessions">
+        <div class="panel-card">
+          <h3>Current Session</h3>
+          <div class="session-row">
+            <div>
+              <div class="sr-device">This device &mdash; Web Browser</div>
+              <div class="sr-meta" id="sessionMeta">Logged in now</div>
+            </div>
+            <span class="session-tag">Active</span>
+          </div>
+        </div>
+ 
+        <div class="panel-card">
+          <h3>Log Out</h3>
+          <p class="pw-hint" style="margin-top:0;">Ending your session will require you to sign in again to access MediSync.</p>
+          <div class="form-actions" style="justify-content:flex-start;">
+            <button type="button" class="btn-danger" id="logoutBtn">
+              Log Out
+            </button>
+          </div>
+        </div>
+      </div>
+ 
+    </main>
+  </div>
+</div>
+ 
+<script>
+try {
+ 
+  var STORAGE_KEY = 'medisync_profile';
+ 
+  function loadProfile() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return {
+      name: 'Admin User', username: 'admin', email: 'admin@medisync.com',
+      phone: '', dept: 'Administration', role: 'Administrator', avatar: ''
+    };
+  }
+  function saveProfile(p) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); } catch (e) {} }
+ 
+  var profile = loadProfile();
+ 
+  function applyProfileToUI() {
+    document.getElementById('heroName').textContent = profile.name;
+    document.getElementById('heroEmail').textContent = profile.email;
+    document.getElementById('heroRole').textContent = profile.role;
+    document.getElementById('p-name').value = profile.name;
+    document.getElementById('p-username').value = profile.username;
+    document.getElementById('p-email').value = profile.email;
+    document.getElementById('p-phone').value = profile.phone || '';
+    document.getElementById('p-dept').value = profile.dept || '';
+    if (profile.avatar) {
+      document.getElementById('heroAvatar').src = profile.avatar;
+      document.getElementById('topbarAvatar').src = profile.avatar;
+    }
+  }
+  applyProfileToUI();
+ 
+  document.getElementById('sessionMeta').textContent = 'Logged in now \u2014 ' + new Date().toLocaleString();
+ 
+  document.querySelectorAll('.tab-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+ 
+ 
+  document.getElementById('avatarInput').addEventListener('change', function (e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function (ev) {
+      profile.avatar = ev.target.result;
+      saveProfile(profile);
+      document.getElementById('heroAvatar').src = profile.avatar;
+      document.getElementById('topbarAvatar').src = profile.avatar;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById('profileForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    profile.name = document.getElementById('p-name').value.trim() || profile.name;
+    profile.username = document.getElementById('p-username').value.trim() || profile.username;
+    profile.email = document.getElementById('p-email').value.trim() || profile.email;
+    profile.phone = document.getElementById('p-phone').value.trim();
+    profile.dept = document.getElementById('p-dept').value.trim();
+    saveProfile(profile);
+    applyProfileToUI();
+    var flash = document.getElementById('profileFlash');
+    flash.classList.add('show');
+    setTimeout(function () { flash.classList.remove('show'); }, 2500);
+  });
+ 
+  document.getElementById('passwordForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var current = document.getElementById('pw-current').value;
+    var next = document.getElementById('pw-new').value;
+    var confirm = document.getElementById('pw-confirm').value;
+ 
+    if (!current) { alert('Please enter your current password.'); return; }
+    if (next.length < 8) { alert('New password must be at least 8 characters.'); return; }
+    if (next !== confirm) { alert('New password and confirmation do not match.'); return; }
+ 
+    document.getElementById('pw-current').value = '';
+    document.getElementById('pw-new').value = '';
+    document.getElementById('pw-confirm').value = '';
+    var flash = document.getElementById('passwordFlash');
+    flash.classList.add('show');
+    setTimeout(function () { flash.classList.remove('show'); }, 2500);
+  });
+ 
+  function doLogout() {
+    if (confirm('Log out of MediSync?')) {
+      window.location.href = 'login_page.html';
+    }
+  }
+  document.getElementById('logoutBtn').addEventListener('click', doLogout);
+  document.getElementById('sidebarLogoutBtn').addEventListener('click', doLogout);
+ 
+} catch (initErr) {
+  console.error('MediSync profile.html failed to initialize:', initErr);
+  document.body.insertAdjacentHTML('afterbegin',
+    '<div style="background:#fee;border:1px solid #e85d4e;color:#a3392d;padding:1rem 2.2rem;font-family:monospace;font-size:0.85rem;white-space:pre-wrap;">This page hit a script error and could not load its data: ' +
+    (initErr && initErr.message ? initErr.message : initErr) + '</div>'
+  );
+}
+</script>
+ 
+</body>
+</html>

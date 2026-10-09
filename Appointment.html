@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Appointments — MediSync HMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sky-900: #0a3554;
+  --sky-800: #0d4266;
+  --sky-700: #10557f;
+  --sky-600: #1478a8;
+  --sky-500: #1c9fe0;
+  --sky-400: #3fb6ea;
+  --sky-300: #7ccdf0;
+  --sky-100: #e4f4fb;
+  --paper: #f2f8fb;
+  --paper-line: #dbe8ef;
+  --ink: #142c3a;
+  --slate: #5c7284;
+  --slate-light: #94a8b6;
+  --pulse: #e85d4e;
+  --amber: #d99a2b;
+  --good: #2e9a6c;
+ 
+  --font-display: "Fraunces", "Iowan Old Style", serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+}
+ 
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; min-height: 100vh; background: var(--paper); color: var(--ink); font-family: var(--font-body); }
+a { color: inherit; text-decoration: none; }
+button { font-family: var(--font-body); }
+ 
+.app-shell { display: flex; min-height: 100vh; }
+ 
+.sidebar {
+  width: 240px; flex-shrink: 0;
+  background: linear-gradient(180deg, var(--sky-900), var(--sky-800));
+  color: #eaf5fb;
+  display: flex; flex-direction: column;
+  padding: 1.6rem 1.1rem;
+  position: sticky; top: 0; height: 100vh;
+}
+.sidebar-brand { display: flex; align-items: center; gap: 0.7rem; padding: 0 0.4rem 1.6rem; }
+.sidebar-brand img {
+  width: 42px; height: 42px; border-radius: 11px;
+  background: rgba(255,255,255,0.95); object-fit: contain; padding: 4px;
+}
+.sidebar-brand .brand-text strong {
+  display: block; font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; letter-spacing: 0.01em;
+}
+.sidebar-brand .brand-text span {
+  display: block; font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--sky-300); margin-top: 0.1rem;
+}
+ 
+.sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
+.sidebar-nav a {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.68rem 0.8rem; border-radius: 10px;
+  font-size: 0.9rem; font-weight: 500; color: rgba(234,245,251,0.82);
+  transition: background 0.15s, color 0.15s;
+}
+.sidebar-nav a svg { width: 18px; height: 18px; flex-shrink: 0; }
+.sidebar-nav a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.sidebar-nav a.active { background: var(--sky-500); color: #fff; }
+ 
+.sidebar-logout {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.68rem 0.8rem; border-radius: 10px;
+  font-size: 0.9rem; font-weight: 500; color: rgba(234,245,251,0.72);
+  transition: background 0.15s, color 0.15s;
+}
+.sidebar-logout svg { width: 18px; height: 18px; }
+.sidebar-logout:hover { background: rgba(232,93,78,0.18); color: #ffb3a8; }
+
+.main-area { flex: 1; min-width: 0; }
+ 
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; padding: 1.3rem 2.2rem;
+  background: #fff; border-bottom: 1px solid var(--paper-line);
+  flex-wrap: wrap;
+}
+.topbar h1 {
+  font-family: var(--font-display); font-weight: 600; font-size: 1.55rem;
+  margin: 0; color: var(--ink);
+}
+.topbar p { margin: 0.2rem 0 0; font-size: 0.85rem; color: var(--slate); }
+ 
+.topbar-right { display: flex; align-items: center; gap: 0.8rem; }
+ 
+.profile-link {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--sky-500); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  transition: filter 0.15s, box-shadow 0.15s;
+  box-shadow: 0 0 0 2px var(--sky-100);
+}
+.profile-link:hover { filter: brightness(1.08); }
+.profile-link svg { width: 20px; height: 20px; }
+ 
+main { padding: 2rem 2.2rem 3rem; }
+ 
+.stat-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem; margin-bottom: 1.4rem;
+}
+.stat-card {
+  border-radius: 16px; padding: 1.5rem 1.6rem;
+  color: #fff; position: relative; overflow: hidden;
+  min-height: 148px; display: flex; flex-direction: column; justify-content: center;
+}
+.stat-card::after {
+  content: ""; position: absolute; right: -30px; bottom: -30px;
+  width: 140px; height: 140px; border-radius: 50%;
+  background: rgba(255,255,255,0.10);
+}
+.stat-card .icon-badge {
+  position: absolute; right: 1.3rem; top: 50%; transform: translateY(-50%);
+  width: 62px; height: 62px; border-radius: 50%;
+  background: rgba(255,255,255,0.22);
+  display: flex; align-items: center; justify-content: center;
+}
+.stat-card .icon-badge svg { width: 30px; height: 30px; }
+.stat-card h3 { margin: 0 0 0.15rem; font-size: 1.02rem; font-weight: 700; max-width: 75%; }
+.stat-card .cap { margin: 0 0 0.9rem; font-size: 0.78rem; opacity: 0.85; max-width: 75%; }
+.stat-card .value { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 2.3rem; }
+ 
+.stat-card.c1 { background: linear-gradient(135deg, var(--sky-500), var(--sky-700)); }
+.stat-card.c2 { background: linear-gradient(135deg, var(--sky-400), var(--sky-600)); }
+.stat-card.c3 { background: linear-gradient(135deg, #57cdea, var(--sky-500)); }
+ 
+.panel-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+}
+.overview-card {
+  border-radius: 16px; padding: 1.6rem 1.6rem 1.5rem;
+  background: linear-gradient(160deg, var(--sky-800), var(--sky-900));
+  color: #eaf5fb; display: flex; flex-direction: column; min-height: 300px;
+}
+.overview-card h3 {
+  font-family: var(--font-body); font-weight: 700; font-size: 1.08rem; margin: 0 0 0.5rem;
+}
+.overview-card p.desc { font-size: 0.83rem; line-height: 1.55; color: rgba(234,245,251,0.78); margin: 0 0 1rem; }
+.overview-card .highlight {
+  font-size: 0.84rem; font-weight: 600; color: var(--sky-300); margin: 0 0 1.1rem;
+}
+.overview-card .cta {
+  align-self: flex-start; background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25); color: #fff;
+  font-size: 0.82rem; font-weight: 600; padding: 0.55rem 1rem;
+  border-radius: 9px; cursor: pointer; transition: background 0.15s;
+  margin-top: auto;
+}
+.overview-card .cta:hover { background: rgba(255,255,255,0.22); }
+ 
+.overview-illustration {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  margin: 0.6rem 0 1rem;
+}
+.overview-illustration svg { width: 100%; max-width: 190px; height: auto; }
+ 
+@media (max-width: 1080px) {
+  .stat-grid, .panel-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 760px) {
+  .app-shell { flex-direction: column; }
+  .sidebar { width: 100%; height: auto; position: relative; flex-direction: row; align-items: center; overflow-x: auto; }
+  .sidebar-brand { padding: 0 1rem 0 0; }
+  .sidebar-nav { flex-direction: row; }
+  .sidebar-logout { display: none; }
+  .stat-grid, .panel-grid { grid-template-columns: 1fr; }
+  main { padding: 1.4rem 1.2rem 2.4rem; }
+  .topbar { padding: 1rem 1.2rem; }
+}
+ 
+.icon-tabs {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 1rem;
+}
+.icon-tab {
+  background: #fff; border: 1px solid var(--paper-line); border-radius: 14px;
+  padding: 1.2rem 0.8rem 1.1rem;
+  display: flex; flex-direction: column; align-items: center; gap: 0.7rem;
+  text-align: center; transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.icon-tab:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px -14px rgba(10,53,84,0.35);
+  border-color: var(--sky-300);
+}
+.icon-tab img {
+  width: 56px; height: 56px; border-radius: 14px; object-fit: cover;
+}
+.icon-tab span {
+  font-size: 0.82rem; font-weight: 600; color: var(--sky-900); line-height: 1.25;
+}
+ 
+@media (max-width: 1080px) {
+  .icon-tabs { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 640px) {
+  .icon-tabs { grid-template-columns: repeat(3, 1fr); gap: 0.7rem; }
+  .icon-tab img { width: 46px; height: 46px; }
+  .icon-tab span { font-size: 0.75rem; }
+}
+ 
+main { padding: 2rem 2.2rem 3rem; }
+ 
+.page-head { margin-bottom: 1.4rem; }
+.page-head h2 {
+  font-family: var(--font-display); font-weight: 600; font-size: 1.3rem;
+  color: var(--sky-900); margin: 0 0 0.2rem;
+}
+.page-head p { margin: 0; color: var(--slate); font-size: 0.88rem; }
+ 
+.appt-panel {
+  background: #fff; border: 1px solid var(--paper-line); border-radius: 14px;
+  padding: 1.3rem 1.4rem 1.6rem;
+}
+ 
+.appt-toolbar {
+  display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;
+  margin-bottom: 1.3rem;
+}
+.view-tabs { display: flex; gap: 0.3rem; background: var(--sky-100); padding: 0.3rem; border-radius: 10px; }
+.view-tab {
+  border: none; background: transparent; color: var(--sky-800);
+  font-size: 0.85rem; font-weight: 600; padding: 0.5rem 0.95rem;
+  border-radius: 8px; cursor: pointer; transition: background 0.15s, color 0.15s;
+}
+.view-tab:hover { background: rgba(255,255,255,0.6); }
+.view-tab.active { background: var(--sky-500); color: #fff; }
+ 
+.search-box { flex: 1; min-width: 200px; position: relative; }
+.search-box input {
+  width: 100%; font-family: var(--font-body); font-size: 0.9rem;
+  padding: 0.65rem 0.9rem 0.65rem 2.4rem; border-radius: 9px;
+  border: 1px solid var(--paper-line); background: var(--paper); color: var(--ink);
+  outline: none; transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.search-box input:focus { border-color: var(--sky-500); background: #fff; box-shadow: 0 0 0 3px rgba(28,159,224,0.14); }
+.search-box svg { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--slate-light); }
+ 
+.doctor-filter {
+  font-family: var(--font-body); font-size: 0.86rem;
+  padding: 0.62rem 0.9rem; border-radius: 9px;
+  border: 1px solid var(--paper-line); background: #fff; color: var(--ink);
+}
+ 
+.btn-primary {
+  font-family: var(--font-body); font-weight: 600; font-size: 0.88rem;
+  color: #fff; background: var(--sky-500); border: none; border-radius: 9px;
+  padding: 0.65rem 1.1rem; cursor: pointer; transition: background 0.15s;
+  display: inline-flex; align-items: center; gap: 0.4rem; white-space: nowrap;
+}
+.btn-primary:hover { background: var(--sky-600); }
+.btn-primary svg { width: 16px; height: 16px; }
+ 
+.appt-view { display: none; }
+.appt-view.active { display: block; }
+ 
+.appt-list { display: flex; flex-direction: column; gap: 0.9rem; }
+.appt-card {
+  border: 1px solid var(--paper-line); border-radius: 12px;
+  padding: 1rem 1.2rem; display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; flex-wrap: wrap; transition: border-color 0.15s, box-shadow 0.15s;
+}
+.appt-card:hover { border-color: var(--sky-300); box-shadow: 0 8px 20px -14px rgba(10,53,84,0.3); }
+.appt-card .who { display: flex; align-items: center; gap: 0.85rem; }
+.appt-avatar {
+  width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+  background: var(--sky-500); color: #fff; display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 600; font-size: 0.95rem;
+}
+.appt-card h4 { margin: 0 0 0.15rem; font-size: 0.95rem; font-weight: 600; }
+.appt-card .meta { font-size: 0.8rem; color: var(--slate); display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.appt-card .meta .dot-sep { width: 3px; height: 3px; border-radius: 50%; background: var(--slate-light); }
+ 
+.appt-right { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.status-pill { display: inline-block; padding: 0.28rem 0.7rem; border-radius: 999px; font-size: 0.74rem; font-weight: 500; }
+.status-pill.confirmed { background: rgba(46,154,108,0.14); color: var(--good); }
+.status-pill.pending { background: rgba(217,154,43,0.16); color: var(--amber); }
+ 
+.btn-outline {
+  font-family: var(--font-body); font-size: 0.8rem; font-weight: 500;
+  background: #fff; border: 1px solid var(--paper-line); color: var(--ink);
+  padding: 0.45rem 0.8rem; border-radius: 8px; cursor: pointer; transition: background 0.15s;
+}
+.btn-outline:hover { background: var(--sky-100); }
+.btn-outline.danger { color: var(--pulse); border-color: rgba(232,93,78,0.35); }
+.btn-outline.danger:hover { background: rgba(232,93,78,0.08); }
+.btn-outline.pay {
+  background: var(--sky-900); color: #fff; border-color: var(--sky-900);
+}
+.btn-outline.pay:hover { background: var(--sky-800); }
+ 
+.calendar-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.calendar-head h3 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; color: var(--sky-900); }
+.calendar-nav { display: flex; gap: 0.4rem; }
+.calendar-nav button {
+  width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--paper-line);
+  background: #fff; color: var(--sky-700); cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.calendar-nav button:hover { background: var(--sky-100); }
+.calendar-nav svg { width: 15px; height: 15px; }
+ 
+.calendar-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem;
+}
+.calendar-grid .dow {
+  font-size: 0.72rem; font-weight: 600; text-transform: uppercase; color: var(--slate);
+  text-align: center; padding-bottom: 0.3rem;
+}
+.calendar-day {
+  min-height: 78px; border: 1px solid var(--paper-line); border-radius: 10px;
+  padding: 0.5rem; font-size: 0.78rem; color: var(--ink); position: relative;
+}
+.calendar-day.empty { border-color: transparent; }
+.calendar-day .num { font-weight: 600; }
+.calendar-day.today { border-color: var(--sky-500); background: var(--sky-100); }
+.calendar-day .appt-chip {
+  margin-top: 0.35rem; font-size: 0.66rem; font-weight: 500;
+  background: var(--sky-500); color: #fff; border-radius: 5px;
+  padding: 0.1rem 0.35rem; display: inline-block;
+}
+.calendar-day .appt-chip.secondary { background: var(--sky-300); color: var(--sky-900); margin-top: 0.2rem; }
+ 
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 50;
+  background: rgba(10,53,84,0.45);
+  align-items: center; justify-content: center; padding: 1.5rem;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: #fff; border-radius: 16px; width: 100%; max-width: 480px;
+  max-height: 88vh; overflow-y: auto;
+  box-shadow: 0 30px 70px -20px rgba(10,53,84,0.5);
+}
+.modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--sky-900); color: #fff; padding: 1.2rem 1.4rem;
+  border-radius: 16px 16px 0 0;
+}
+.modal-head h3 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 1.15rem; }
+.modal-close {
+  width: 30px; height: 30px; border-radius: 50%; border: none;
+  background: rgba(255,255,255,0.15); color: #fff; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-close:hover { background: rgba(255,255,255,0.25); }
+.modal-close svg { width: 15px; height: 15px; }
+.modal-body { padding: 1.4rem; display: flex; flex-direction: column; gap: 1.05rem; }
+ 
+.field { display: flex; flex-direction: column; gap: 0.4rem; }
+.field label { font-size: 0.8rem; font-weight: 600; color: var(--ink); }
+.field input, .field select, .field textarea {
+  font-family: var(--font-body); font-size: 0.92rem;
+  padding: 0.68rem 0.85rem; border: 1px solid var(--paper-line); border-radius: 8px;
+  background: var(--paper); color: var(--ink); outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: var(--sky-500); background: #fff; box-shadow: 0 0 0 3px rgba(28,159,224,0.14);
+}
+ 
+.modal-actions { display: flex; justify-content: flex-end; gap: 0.7rem; padding-top: 0.3rem; }
+.btn-cancel {
+  font-family: var(--font-body); font-weight: 500; font-size: 0.9rem;
+  color: var(--slate); background: transparent; border: 1px solid var(--paper-line);
+  border-radius: 8px; padding: 0.65rem 1.1rem; cursor: pointer; transition: background 0.15s;
+}
+.btn-cancel:hover { background: var(--paper); }
+.btn-confirm {
+  font-family: var(--font-body); font-weight: 600; font-size: 0.9rem;
+  color: #fff; background: var(--sky-900); border: none; border-radius: 8px;
+  padding: 0.65rem 1.2rem; cursor: pointer; transition: background 0.15s;
+}
+.btn-confirm:hover { background: var(--sky-800); }
+ 
+.summary-block {
+  background: var(--paper); border-radius: 10px; padding: 0.95rem 1.05rem;
+}
+.summary-block h4 { margin: 0 0 0.7rem; font-size: 0.86rem; font-weight: 700; color: var(--sky-900); }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem 1rem; font-size: 0.85rem; }
+.summary-grid .lab { color: var(--slate); font-size: 0.72rem; margin-bottom: 0.15rem; }
+.summary-grid .val { font-weight: 600; color: var(--ink); }
+.pay-row { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 0.3rem 0; }
+.pay-row.total { font-weight: 700; font-size: 0.95rem; border-top: 1px solid var(--paper-line); margin-top: 0.4rem; padding-top: 0.6rem; }
+.pay-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.pay-method {
+  border: 1px solid var(--paper-line); border-radius: 8px; padding: 0.65rem;
+  text-align: center; font-size: 0.85rem; font-weight: 500; cursor: pointer; background: #fff;
+  transition: border-color 0.15s, background 0.15s;
+}
+.pay-method:hover { border-color: var(--sky-500); }
+.pay-method.selected { border-color: var(--sky-500); background: var(--sky-100); color: var(--sky-800); }
+.btn-complete {
+  width: 100%; font-family: var(--font-body); font-weight: 600; font-size: 0.92rem;
+  color: #fff; background: var(--good); border: none; border-radius: 8px;
+  padding: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+}
+.btn-complete:hover { filter: brightness(1.05); }
+.secondary-actions { display: flex; gap: 0.6rem; }
+.secondary-actions .btn-outline { flex: 1; text-align: center; }
+ 
+@media (max-width: 640px) {
+  main { padding: 1.4rem 1.2rem 2.4rem; }
+  .appt-card { flex-direction: column; align-items: flex-start; }
+  .calendar-day { min-height: 56px; font-size: 0.7rem; }
+  .summary-grid { grid-template-columns: 1fr; }
+}
+ 
+</style>
+<body>
+ 
+<div class="app-shell">
+ 
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="medisync_logo.jpeg" alt="MediSync logo">
+     <div class="brand-text">
+        <strong>MediSync</strong>
+        <span>Hospital Management</span>
+      </div>
+    </div>
+ 
+    <nav class="sidebar-nav">
+      <a href="dashboard.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Dashboard
+      </a>
+      <a href="patients.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Patients
+      </a>
+      <a href="appointments.html" class="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        Appointments
+      </a>
+      <a href="doctors.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg>
+        Doctors
+      </a>
+      <a href="billing.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 14h3"/></svg>
+        Billing
+      </a>
+      <a href="laboratory.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6.5L4.5 17a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L15 8.5V2"/><path d="M9 2h6M8.5 13h7"/></svg>
+        Laboratory
+      </a>
+      <a href="contact.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.68 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.32 1.85.55 2.81.68A2 2 0 0 1 22 16.92Z"/></svg>
+        Contact Us
+      </a>
+    </nav>
+ 
+    <a href="login_page.html" class="sidebar-logout">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </a>
+  </aside>
+ 
+  <div class="main-area">
+ 
+    <header class="topbar">
+      <div>
+        <h1>Appointments</h1>
+        <p>Schedule and track patient appointments easily.</p>
+      </div>
+      <div class="topbar-right">
+        <a href="login_page.html" class="profile-link" title="Login / Logout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+        </a>
+      </div>
+    </header>
+ 
+
+ 
+  <div class="appt-panel">
+ 
+    <div class="appt-toolbar">
+      <div class="view-tabs">
+        <button class="view-tab active" data-view="today" type="button">Today</button>
+        <button class="view-tab" data-view="upcoming" type="button">Upcoming</button>
+        <button class="view-tab" data-view="calendar" type="button">Calendar</button>
+      </div>
+ 
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="apptSearch" placeholder="Search patient&hellip;">
+      </div>
+ 
+      <select class="doctor-filter" id="doctorFilter">
+        <option value="">All doctors</option>
+        <option>Dr. Smith &mdash; Cardiology</option>
+        <option>Dr. David &mdash; Orthopedics</option>
+        <option>Dr. Miller &mdash; Gynecology</option>
+        <option>Dr. Fernando &mdash; Cardiology</option>
+      </select>
+ 
+      <button class="btn-primary" type="button" id="openScheduleModal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Schedule Appointment
+      </button>
+    </div>
+ 
+    <div class="appt-view active" id="view-today">
+      <div class="appt-list" data-appt-list>
+ 
+        <div class="appt-card" data-doctor="Dr. Smith — Cardiology" data-patient="emily john">
+          <div class="who">
+            <div class="appt-avatar">EJ</div>
+            <div>
+              <h4>Emily John</h4>
+              <div class="meta">
+                <span>Dr. Smith &middot; Cardiology</span>
+                <span class="dot-sep"></span>
+                <span>Oct 31, 2025</span>
+                <span class="dot-sep"></span>
+                <span>08:00 AM</span>
+              </div>
+            </div>
+          </div>
+          <div class="appt-right">
+            <span class="status-pill confirmed">Confirmed</span>
+            <button class="btn-outline">Reschedule</button>
+            <button class="btn-outline danger">Cancel</button>
+            <button class="btn-outline pay" data-checkout data-name="John Smith" data-dept="Cardiology" data-doctor-name="Dr. Fernando" data-date="2025-11-01" data-amount="2200.00">Checkout</button>
+          </div>
+        </div>
+ 
+        <div class="appt-card" data-doctor="Dr. David — Orthopedics" data-patient="james wils">
+          <div class="who">
+            <div class="appt-avatar">JW</div>
+            <div>
+              <h4>James Wils</h4>
+              <div class="meta">
+                <span>Dr. David &middot; Orthopedics</span>
+                <span class="dot-sep"></span>
+                <span>Oct 31, 2025</span>
+                <span class="dot-sep"></span>
+                <span>08:30 AM</span>
+              </div>
+            </div>
+          </div>
+          <div class="appt-right">
+            <span class="status-pill confirmed">Confirmed</span>
+            <button class="btn-outline">Reschedule</button>
+            <button class="btn-outline danger">Cancel</button>
+            <button class="btn-outline pay" data-checkout data-name="James Wils" data-dept="Orthopedics" data-doctor-name="Dr. David" data-date="2025-10-31" data-amount="1450.00">Checkout</button>
+          </div>
+        </div>
+ 
+        <div class="appt-card" data-doctor="Dr. Miller — Gynecology" data-patient="sophia tayl">
+          <div class="who">
+            <div class="appt-avatar">ST</div>
+            <div>
+              <h4>Sophia Tayl</h4>
+              <div class="meta">
+                <span>Dr. Miller &middot; Gynecology</span>
+                <span class="dot-sep"></span>
+                <span>Oct 31, 2025</span>
+                <span class="dot-sep"></span>
+                <span>09:00 AM</span>
+              </div>
+            </div>
+          </div>
+          <div class="appt-right">
+            <span class="status-pill confirmed">Confirmed</span>
+            <button class="btn-outline">Reschedule</button>
+            <button class="btn-outline danger">Cancel</button>
+            <button class="btn-outline pay" data-checkout data-name="Sophia Taylor" data-dept="Gynecology" data-doctor-name="Dr. Miller" data-date="2025-10-31" data-amount="1800.00">Checkout</button>
+          </div>
+        </div>
+ 
+        <div class="appt-card" data-doctor="Dr. Smith — Cardiology" data-patient="michael brown">
+          <div class="who">
+            <div class="appt-avatar">MB</div>
+            <div>
+              <h4>Michael Brown</h4>
+              <div class="meta">
+                <span>Dr. Smith &middot; Cardiology</span>
+                <span class="dot-sep"></span>
+                <span>Oct 31, 2025</span>
+                <span class="dot-sep"></span>
+                <span>08:00 PM</span>
+              </div>
+            </div>
+          </div>
+          <div class="appt-right">
+            <span class="status-pill pending">Pending</span>
+            <button class="btn-outline">Reschedule</button>
+            <button class="btn-outline danger">Cancel</button>
+          </div>
+        </div>
+ 
+      </div>
+    </div>
+ 
+    <!-- Upcoming view -->
+    <div class="appt-view" id="view-upcoming">
+      <div class="appt-list" data-appt-list>
+ 
+        <div class="appt-card" data-doctor="Dr. Smith — Cardiology" data-patient="sophia taylor">
+          <div class="who">
+            <div class="appt-avatar">ST</div>
+            <div>
+              <h4>Sophia Taylor</h4>
+              <div class="meta">
+                <span>Dr. Smith &middot; Cardiology</span>
+                <span class="dot-sep"></span>
+                <span>Nov 4, 2025</span>
+                <span class="dot-sep"></span>
+                <span>08:00 AM</span>
+              </div>
+            </div>
+          </div>
+          <div class="appt-right">
+            <span class="status-pill confirmed">Confirmed</span>
+            <button class="btn-outline">Reschedule</button>
+            <button class="btn-outline danger">Cancel</button>
+          </div>
+        </div>
+ 
+        <div class="appt-card" data-doctor="Dr. David — Orthopedics" data-patient="michael brown">
+          <div class="who">
+            <div class="appt-avatar">MB</div>
+            <div>
+              <h4>Michael Brown</h4>
+              <div class="meta">
+                <span>Dr. David &middot; Orthopedics</span>
+                <span class="dot-sep"></span>
+                <span>Nov 5, 2025</span>
+                <span class="dot-sep"></span>
+                <span>08:30 AM</span>
+              </div>
+            </div>
+          </div>
+          <div class="appt-right">
+            <span class="status-pill confirmed">Confirmed</span>
+            <button class="btn-outline">Reschedule</button>
+            <button class="btn-outline danger">Cancel</button>
+          </div>
+        </div>
+ 
+      </div>
+    </div>
+ 
+    <div class="appt-view" id="view-calendar">
+      <div class="calendar-head">
+        <h3>October 2025</h3>
+        <div class="calendar-nav">
+          <button type="button" title="Previous month">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          <button type="button" title="Next month">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="calendar-grid">
+        <div class="dow">Sun</div><div class="dow">Mon</div><div class="dow">Tue</div><div class="dow">Wed</div><div class="dow">Thu</div><div class="dow">Fri</div><div class="dow">Sat</div>
+ 
+        <div class="calendar-day empty"></div><div class="calendar-day empty"></div><div class="calendar-day empty"></div>
+        <div class="calendar-day"><span class="num">1</span></div>
+        <div class="calendar-day"><span class="num">2</span></div>
+        <div class="calendar-day"><span class="num">3</span><span class="appt-chip">2 appts</span></div>
+        <div class="calendar-day"><span class="num">4</span></div>
+ 
+        <div class="calendar-day"><span class="num">5</span></div>
+        <div class="calendar-day"><span class="num">6</span></div>
+        <div class="calendar-day"><span class="num">7</span><span class="appt-chip">1 appt</span></div>
+        <div class="calendar-day"><span class="num">8</span></div>
+        <div class="calendar-day"><span class="num">9</span></div>
+        <div class="calendar-day"><span class="num">10</span></div>
+        <div class="calendar-day"><span class="num">11</span></div>
+ 
+        <div class="calendar-day"><span class="num">12</span></div>
+        <div class="calendar-day"><span class="num">13</span></div>
+        <div class="calendar-day"><span class="num">14</span><span class="appt-chip">3 appts</span><span class="appt-chip secondary">+1</span></div>
+        <div class="calendar-day"><span class="num">15</span></div>
+        <div class="calendar-day"><span class="num">16</span></div>
+        <div class="calendar-day"><span class="num">17</span></div>
+        <div class="calendar-day"><span class="num">18</span></div>
+ 
+        <div class="calendar-day"><span class="num">19</span></div>
+        <div class="calendar-day"><span class="num">20</span></div>
+        <div class="calendar-day"><span class="num">21</span></div>
+        <div class="calendar-day"><span class="num">22</span></div>
+        <div class="calendar-day"><span class="num">23</span></div>
+        <div class="calendar-day"><span class="num">24</span></div>
+        <div class="calendar-day"><span class="num">25</span></div>
+ 
+        <div class="calendar-day"><span class="num">26</span></div>
+        <div class="calendar-day"><span class="num">27</span></div>
+        <div class="calendar-day"><span class="num">28</span></div>
+        <div class="calendar-day"><span class="num">29</span></div>
+        <div class="calendar-day"><span class="num">30</span></div>
+        <div class="calendar-day today"><span class="num">31</span><span class="appt-chip">4 appts</span></div>
+        <div class="calendar-day empty"></div>
+      </div>
+    </div>
+ 
+  </div>
+</main>
+ 
+<div class="modal-overlay" id="scheduleModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Schedule New Appointment</h3>
+      <button class="modal-close" data-close-modal="scheduleModal" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="scheduleForm" novalidate>
+        <div class="field">
+          <label for="fPatient">Patient</label>
+          <select id="fPatient">
+            <option value="">Select patient</option>
+            <option>Emily John</option>
+            <option>James Wils</option>
+            <option>Sophia Taylor</option>
+            <option>Michael Brown</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fDoctor">Doctor</label>
+          <select id="fDoctor">
+            <option value="">Select doctor</option>
+            <option>Dr. Smith &mdash; Cardiology</option>
+            <option>Dr. David &mdash; Orthopedics</option>
+            <option>Dr. Miller &mdash; Gynecology</option>
+            <option>Dr. Fernando &mdash; Cardiology</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fDept">Department</label>
+          <select id="fDept">
+            <option value="">Select department</option>
+            <option>Cardiology</option>
+            <option>Orthopedics</option>
+            <option>Gynecology</option>
+            <option>General Medicine</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fType">Appointment Type</label>
+          <select id="fType">
+            <option value="">Select type</option>
+            <option>New Consultation</option>
+            <option>Follow-up</option>
+            <option>Routine Checkup</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fDate">Date</label>
+          <input type="date" id="fDate">
+        </div>
+        <div class="field">
+          <label for="fTime">Time</label>
+          <input type="time" id="fTime" value="09:00">
+        </div>
+        <div class="field">
+          <label for="fNotes">Notes</label>
+          <textarea id="fNotes" rows="3" placeholder="Additional notes&hellip;"></textarea>
+        </div>
+ 
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" data-close-modal="scheduleModal">Cancel</button>
+          <button type="submit" class="btn-confirm">Schedule</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+ 
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Checkout</h3>
+      <button class="modal-close" data-close-modal="checkoutModal" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+ 
+      <div class="summary-block">
+        <h4>Patient Summary</h4>
+        <div class="summary-grid">
+          <div><p class="lab">Name</p><p class="val" id="coName">&mdash;</p></div>
+          <div><p class="lab">Department</p><p class="val" id="coDept">&mdash;</p></div>
+          <div><p class="lab">Date of Visit</p><p class="val" id="coDate">&mdash;</p></div>
+          <div><p class="lab">Consulting Doctor</p><p class="val" id="coDoctor">&mdash;</p></div>
+        </div>
+      </div>
+ 
+      <div class="summary-block">
+        <h4>Payment Summary</h4>
+        <div class="pay-row"><span>Subtotal</span><span id="coSubtotal">Rs. 0.00</span></div>
+        <div class="pay-row total"><span>Total Payable</span><span id="coTotal">Rs. 0.00</span></div>
+      </div>
+ 
+      <div class="summary-block">
+        <h4>Payment Section</h4>
+        <div class="pay-methods">
+          <button type="button" class="pay-method selected" data-method="Cash">Cash</button>
+          <button type="button" class="pay-method" data-method="Card">Card</button>
+        </div>
+      </div>
+ 
+      <button type="button" class="btn-complete" id="completeCheckout">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        Complete Checkout
+      </button>
+ 
+      <div class="secondary-actions">
+        <button type="button" class="btn-outline">Print Bill</button>
+        <button type="button" class="btn-outline">Email Invoice</button>
+      </div>
+ 
+    </div>
+  </div>
+</div>
+ 
+<script>
+
+  var viewTabs = document.querySelectorAll('.view-tab');
+  var views = document.querySelectorAll('.appt-view');
+  viewTabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      viewTabs.forEach(function (t) { t.classList.remove('active'); });
+      views.forEach(function (v) { v.classList.remove('active'); });
+      tab.classList.add('active');
+      document.getElementById('view-' + tab.getAttribute('data-view')).classList.add('active');
+    });
+  });
+ 
+  
+  var searchInput = document.getElementById('apptSearch');
+  var doctorFilter = document.getElementById('doctorFilter');
+ 
+  function applyFilters() {
+    var q = searchInput.value.trim().toLowerCase();
+    var doc = doctorFilter.value;
+    document.querySelectorAll('[data-appt-list] .appt-card').forEach(function (card) {
+      var matchesSearch = !q || card.getAttribute('data-patient').includes(q);
+      var matchesDoctor = !doc || card.getAttribute('data-doctor') === doc;
+      card.style.display = (matchesSearch && matchesDoctor) ? '' : 'none';
+    });
+  }
+  searchInput.addEventListener('input', applyFilters);
+  doctorFilter.addEventListener('change', applyFilters);
+ 
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+ 
+  document.getElementById('openScheduleModal').addEventListener('click', function () {
+    openModal('scheduleModal');
+  });
+ 
+  document.querySelectorAll('[data-close-modal]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      closeModal(btn.getAttribute('data-close-modal'));
+    });
+  });
+ 
+  document.querySelectorAll('.modal-overlay').forEach(function (overlay) {
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) overlay.classList.remove('open');
+    });
+  });
+ 
+  
+  document.getElementById('scheduleForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    alert('This is a static preview — connect this form to your backend to save the appointment.');
+    closeModal('scheduleModal');
+  });
+ 
+  
+  var checkoutContext = null;
+  var checkoutMethod = 'Cash';
+
+  document.querySelectorAll('[data-checkout]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var amount = parseFloat(btn.getAttribute('data-amount')) || 0;
+      checkoutContext = {
+        name: btn.getAttribute('data-name'),
+        dept: btn.getAttribute('data-dept'),
+        doctor: btn.getAttribute('data-doctor-name'),
+        date: btn.getAttribute('data-date'),
+        amount: amount
+      };
+      document.getElementById('coName').textContent = checkoutContext.name;
+      document.getElementById('coDept').textContent = checkoutContext.dept;
+      document.getElementById('coDoctor').textContent = checkoutContext.doctor;
+      document.getElementById('coDate').textContent = checkoutContext.date;
+      document.getElementById('coSubtotal').textContent = 'Rs. ' + amount.toFixed(2);
+      document.getElementById('coTotal').textContent = 'Rs. ' + amount.toFixed(2);
+
+      checkoutMethod = 'Cash';
+      document.querySelectorAll('.pay-method').forEach(function (m) {
+        m.classList.toggle('selected', m.getAttribute('data-method') === 'Cash');
+      });
+      openModal('checkoutModal');
+    });
+  });
+ 
+  document.querySelectorAll('.pay-method').forEach(function (m) {
+    m.addEventListener('click', function () {
+      document.querySelectorAll('.pay-method').forEach(function (x) { x.classList.remove('selected'); });
+      m.classList.add('selected');
+      checkoutMethod = m.getAttribute('data-method');
+    });
+  });
+
+  var BILLING_STORAGE_KEY = 'medisync_billing_data';
+
+  function loadBillingData() {
+    try {
+      var raw = localStorage.getItem(BILLING_STORAGE_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.invoices) && Array.isArray(parsed.paidReceipts)) return parsed;
+      }
+    } catch (e) {}
+    return { invoices: [], paidReceipts: [], nextInvoiceNum: 3022, nextReceiptNum: 9002 };
+  }
+  function saveBillingData(data) {
+    try { localStorage.setItem(BILLING_STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+
+  document.getElementById('completeCheckout').addEventListener('click', function () {
+    if (!checkoutContext) return;
+
+    var data = loadBillingData();
+    var invoiceNo = 'INV-' + (data.nextInvoiceNum++);
+    var receiptNo = 'RC-' + (data.nextReceiptNum++);
+    var items = [{ desc: 'Consultation — ' + checkoutContext.dept + ' (' + checkoutContext.doctor + ')', qty: 1, price: checkoutContext.amount }];
+
+    data.invoices.unshift({
+      no: invoiceNo, patient: checkoutContext.name, dept: checkoutContext.dept,
+      amount: checkoutContext.amount, status: 'Paid', items: items
+    });
+    data.paidReceipts.unshift({
+      no: receiptNo, invoiceNo: invoiceNo, patient: checkoutContext.name,
+      amount: checkoutContext.amount, method: checkoutMethod,
+      date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+      items: items
+    });
+    saveBillingData(data);
+
+    alert('Payment of Rs. ' + checkoutContext.amount.toFixed(2) + ' recorded via ' + checkoutMethod + '.\nReceipt ' + receiptNo + ' has been added to Billing.');
+    closeModal('checkoutModal');
+    checkoutContext = null;
+  });
+</script>
+ 
+</body>
+</html>

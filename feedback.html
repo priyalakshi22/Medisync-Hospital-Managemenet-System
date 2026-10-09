@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feedback — MediSync HMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sky-900: #0a3554; --sky-800: #0d4266; --sky-700: #10557f; --sky-600: #1478a8;
+  --sky-500: #1c9fe0; --sky-400: #3fb6ea; --sky-300: #7ccdf0; --sky-100: #e4f4fb;
+  --paper: #f2f8fb; --paper-line: #dbe8ef; --ink: #142c3a; --slate: #5c7284; --slate-light: #94a8b6;
+  --pulse: #e85d4e; --amber: #d99a2b; --good: #2e9a6c;
+  --font-display: "Fraunces", "Iowan Old Style", serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; min-height: 100vh; background: var(--paper); color: var(--ink); font-family: var(--font-body); }
+a { color: inherit; text-decoration: none; }
+button, select, input, textarea { font-family: var(--font-body); }
+.app-shell { display: flex; min-height: 100vh; }
+ 
+.sidebar {
+  width: 240px; flex-shrink: 0;
+  background: linear-gradient(180deg, var(--sky-900), var(--sky-800));
+  color: #eaf5fb; display: flex; flex-direction: column; padding: 1.6rem 1.1rem;
+  position: sticky; top: 0; height: 100vh;
+}
+.sidebar-brand { display: flex; align-items: center; gap: 0.7rem; padding: 0 0.4rem 1.6rem; }
+.sidebar-brand img { width: 42px; height: 42px; border-radius: 11px; background: rgba(255,255,255,0.95); object-fit: contain; padding: 4px; }
+.sidebar-brand .brand-text strong { display: block; font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; }
+.sidebar-brand .brand-text span { display: block; font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sky-300); margin-top: 0.1rem; }
+.sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
+.sidebar-nav a { display: flex; align-items: center; gap: 0.75rem; padding: 0.68rem 0.8rem; border-radius: 10px; font-size: 0.9rem; font-weight: 500; color: rgba(234,245,251,0.82); transition: background 0.15s, color 0.15s; }
+.sidebar-nav a svg { width: 18px; height: 18px; flex-shrink: 0; }
+.sidebar-nav a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.sidebar-nav a.active { background: var(--sky-500); color: #fff; }
+.sidebar-logout { display: flex; align-items: center; gap: 0.75rem; padding: 0.68rem 0.8rem; border-radius: 10px; font-size: 0.9rem; font-weight: 500; color: rgba(234,245,251,0.72); }
+.sidebar-logout svg { width: 18px; height: 18px; }
+.sidebar-logout:hover { background: rgba(232,93,78,0.18); color: #ffb3a8; }
+ 
+.main-area { flex: 1; min-width: 0; }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.3rem 2.2rem; background: #fff; border-bottom: 1px solid var(--paper-line); flex-wrap: wrap; }
+.topbar h1 { font-family: var(--font-display); font-weight: 600; font-size: 1.55rem; margin: 0; }
+.topbar p { margin: 0.2rem 0 0; font-size: 0.85rem; color: var(--slate); }
+.profile-link { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px var(--sky-100); }
+.profile-link img { width: 100%; height: 100%; object-fit: cover; }
+main { padding: 2rem 2.2rem 3rem; }
+ 
+.layout { display: grid; grid-template-columns: 1fr 1.2fr; gap: 1.6rem; align-items: start; }
+ 
+.mini-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.9rem; margin-bottom: 1.4rem; }
+.mini-card { background: #fff; border: 1px solid var(--paper-line); border-radius: 12px; padding: 1rem 1.1rem; }
+.mini-card .label { font-size: 0.76rem; color: var(--slate); margin: 0 0 0.3rem; }
+.mini-card .value { font-family: var(--font-display); font-weight: 600; font-size: 1.4rem; margin: 0; color: var(--sky-700); }
+ 
+.form-card { background: #fff; border: 1px solid var(--paper-line); border-radius: 16px; padding: 1.6rem; }
+.form-card h3 { margin: 0 0 1.1rem; font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; color: var(--sky-900); }
+.field { margin-bottom: 1rem; }
+.field label { display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.4rem; }
+.field input, .field select, .field textarea {
+  width: 100%; padding: 0.68rem 0.85rem; border-radius: 9px; border: 1px solid var(--paper-line);
+  background: var(--paper); font-size: 0.88rem; color: var(--ink);
+}
+.field textarea { resize: vertical; min-height: 100px; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--sky-400); box-shadow: 0 0 0 3px var(--sky-100); background: #fff; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+ 
+.star-rating { display: flex; gap: 0.35rem; }
+.star-rating button {
+  background: none; border: none; cursor: pointer; padding: 0; color: var(--paper-line); transition: color 0.1s;
+}
+.star-rating button svg { width: 28px; height: 28px; }
+.star-rating button.active, .star-rating button:hover, .star-rating button:hover ~ button { color: var(--amber); }
+ 
+.btn-primary { background: var(--sky-900); color: #fff; border: none; padding: 0.72rem 1.3rem; border-radius: 9px; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
+.btn-primary:hover { background: var(--sky-800); }
+.save-flash { display: none; background: rgba(46,154,108,0.12); color: var(--good); border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.84rem; font-weight: 600; margin-bottom: 1rem; }
+.save-flash.show { display: block; }
+ 
+.feedback-list { display: flex; flex-direction: column; gap: 0.9rem; }
+.feedback-card { background: #fff; border: 1px solid var(--paper-line); border-radius: 14px; padding: 1.1rem 1.3rem; }
+.fc-top { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
+.fc-name { font-weight: 700; font-size: 0.92rem; }
+.fc-dept { font-size: 0.76rem; color: var(--slate); }
+.fc-stars { display: flex; gap: 0.1rem; color: var(--amber); }
+.fc-stars svg { width: 15px; height: 15px; }
+.fc-subject { font-size: 0.88rem; font-weight: 600; margin: 0.3rem 0 0.2rem; }
+.fc-message { font-size: 0.84rem; color: var(--slate); line-height: 1.5; margin: 0 0 0.4rem; }
+.fc-date { font-size: 0.74rem; color: var(--slate-light); font-family: var(--font-mono); }
+.empty-state { text-align: center; padding: 2.2rem 1rem; color: var(--slate); background: #fff; border: 1px dashed var(--paper-line); border-radius: 14px; }
+ 
+@media (max-width: 980px) { .layout { grid-template-columns: 1fr; } }
+@media (max-width: 760px) {
+  .app-shell { flex-direction: column; }
+  .sidebar { width: 100%; height: auto; position: relative; flex-direction: row; align-items: center; overflow-x: auto; }
+  .sidebar-brand { padding: 0 1rem 0 0; }
+  .sidebar-nav { flex-direction: row; }
+  .sidebar-logout { display: none; }
+  main { padding: 1.4rem 1.2rem 2.4rem; }
+  .topbar { padding: 1rem 1.2rem; }
+  .mini-stats { grid-template-columns: 1fr; }
+  .field-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+ 
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="medisync_logo.jpeg" alt="MediSync logo">
+      <div class="brand-text"><strong>MediSync</strong><span>Hospital Management System</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Dashboard
+      </a>
+      <a href="Appointment.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M9 16l2 2 4-4"/></svg>
+        Appointment
+      </a>
+      <a href="patients.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Patients
+      </a>
+      <a href="staff.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Staff
+      </a>
+      <a href="billing.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 14h3"/></svg>
+        Billing
+      </a>
+      <a href="laboratory.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6.5L4.5 17a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L15 8.5V2"/><path d="M9 2h6M8.5 13h7"/></svg>
+        Laboratory
+      </a>
+      <a href="reports.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M9 13v4M12 11v6M15 15v2"/></svg>
+        Reports
+      </a>
+      <a href="contact.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.68 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.32 1.85.55 2.81.68A2 2 0 0 1 22 16.92Z"/></svg>
+        Contact Us
+      </a>
+      <a href="Feedback.html" class="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Feedback
+      </a>
+      <a href="about.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        About Us
+      </a>
+    </nav>
+    <a href="login_page.html" class="sidebar-logout">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </a>
+  </aside>
+ 
+  <div class="main-area">
+    <header class="topbar">
+      <div>
+        <h1>Feedback</h1>
+        <p>Share your experience and see what others are saying.</p>
+      </div>
+      <div class="topbar-right">
+        <a href="profile.html" class="profile-link" title="My Profile"><img src="profile_icon.jpg" alt="Profile"></a>
+      </div>
+    </header>
+ 
+    <main>
+      <div class="mini-stats">
+        <div class="mini-card"><p class="label">Total Feedback</p><p class="value" id="statTotal">0</p></div>
+        <div class="mini-card"><p class="label">Average Rating</p><p class="value" id="statAvg">0.0</p></div>
+        <div class="mini-card"><p class="label">This Month</p><p class="value" id="statMonth">0</p></div>
+      </div>
+ 
+      <div class="layout">
+        <div class="form-card">
+          <h3>Share Your Feedback</h3>
+          <div class="save-flash" id="feedbackFlash">Thank you — your feedback has been submitted.</div>
+          <form id="feedbackForm">
+            <div class="field-row">
+              <div class="field"><label>Name</label><input type="text" id="f-name" placeholder="Your name"></div>
+              <div class="field"><label>Email</label><input type="email" id="f-email" placeholder="you@example.com"></div>
+            </div>
+            <div class="field"><label>Department / Service</label>
+              <select id="f-dept">
+                <option>General</option><option>Cardiology</option><option>Orthopedics</option>
+                <option>Gynecology</option><option>Laboratory</option><option>Pharmacy</option>
+                <option>Billing</option><option>Reception</option>
+              </select>
+            </div>
+            <div class="field"><label>Rating</label>
+              <div class="star-rating" id="starRating">
+                <button type="button" data-val="1"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.9L12 17.8 5.8 21.1 7 14.2 2 9.3l6.9-1z"/></svg></button>
+                <button type="button" data-val="2"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.9L12 17.8 5.8 21.1 7 14.2 2 9.3l6.9-1z"/></svg></button>
+                <button type="button" data-val="3"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.9L12 17.8 5.8 21.1 7 14.2 2 9.3l6.9-1z"/></svg></button>
+                <button type="button" data-val="4"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.9L12 17.8 5.8 21.1 7 14.2 2 9.3l6.9-1z"/></svg></button>
+                <button type="button" data-val="5"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.9L12 17.8 5.8 21.1 7 14.2 2 9.3l6.9-1z"/></svg></button>
+              </div>
+            </div>
+            <div class="field"><label>Subject</label><input type="text" id="f-subject" placeholder="e.g. Great experience at the OPD"></div>
+            <div class="field"><label>Message</label><textarea id="f-message" placeholder="Tell us more&hellip;"></textarea></div>
+            <button type="submit" class="btn-primary">Submit Feedback</button>
+          </form>
+        </div>
+ 
+        <div>
+          <div class="feedback-list" id="feedbackList"></div>
+          <div class="empty-state" id="emptyState" style="display:none;">No feedback yet — be the first to share yours.</div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+ 
+<script>
+try {
+ 
+  var STORAGE_KEY = 'medisync_feedback';
+ 
+  var seedFeedback = [
+    { name: 'Chamari W.', dept: 'Cardiology', rating: 5, subject: 'Excellent consultation experience', message: 'Dr. Smith and the nursing staff were attentive and explained everything clearly.', date: '2026-08-28' },
+    { name: 'Ruwan P.', dept: 'Billing', rating: 4, subject: 'Quick invoice processing', message: 'Billing was fast, though the waiting area could use more seating.', date: '2026-08-22' },
+    { name: 'Ishara D.', dept: 'Pharmacy', rating: 3, subject: 'Longer than expected wait', message: 'Prescription took a while to be ready, but staff were polite.', date: '2026-08-15' }
+  ];
+ 
+  function loadFeedback() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    saveFeedback(seedFeedback);
+    return JSON.parse(JSON.stringify(seedFeedback));
+  }
+  function saveFeedback(list) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch (e) {} }
+ 
+  var feedbackList = loadFeedback();
+  var selectedRating = 0;
+ 
+  function escapeHtml(str) {
+    return String(str == null ? '' : str).replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+  function formatDateStr(iso) {
+    if (!iso) return '';
+    var parts = iso.split('-');
+    if (parts.length !== 3) return iso;
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return parseInt(parts[2], 10) + ' ' + months[parseInt(parts[1], 10) - 1] + ' ' + parts[0];
+  }
+  var starIcon = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.9L12 17.8 5.8 21.1 7 14.2 2 9.3l6.9-1z"/></svg>';
+ 
+  function renderStats() {
+    var total = feedbackList.length;
+    var avg = total ? (feedbackList.reduce(function (s, f) { return s + f.rating; }, 0) / total) : 0;
+    var thisMonth = new Date().toISOString().slice(0, 7);
+    var monthCount = feedbackList.filter(function (f) { return (f.date || '').slice(0, 7) === thisMonth; }).length;
+ 
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statAvg').textContent = avg.toFixed(1);
+    document.getElementById('statMonth').textContent = monthCount;
+  }
+ 
+  function render() {
+    var listEl = document.getElementById('feedbackList');
+    var emptyEl = document.getElementById('emptyState');
+    var sorted = feedbackList.slice().sort(function (a, b) { return (b.date || '').localeCompare(a.date || ''); });
+ 
+    if (!sorted.length) {
+      listEl.innerHTML = '';
+      emptyEl.style.display = 'block';
+    } else {
+      emptyEl.style.display = 'none';
+      listEl.innerHTML = sorted.map(function (f) {
+        var stars = '';
+        for (var i = 1; i <= 5; i++) stars += '<span style="opacity:' + (i <= f.rating ? '1' : '0.25') + '">' + starIcon + '</span>';
+        return '<div class="feedback-card">' +
+          '<div class="fc-top">' +
+            '<div><span class="fc-name">' + escapeHtml(f.name) + '</span> &middot; <span class="fc-dept">' + escapeHtml(f.dept) + '</span></div>' +
+            '<div class="fc-stars">' + stars + '</div>' +
+          '</div>' +
+          '<p class="fc-subject">' + escapeHtml(f.subject) + '</p>' +
+          '<p class="fc-message">' + escapeHtml(f.message) + '</p>' +
+          '<span class="fc-date">' + escapeHtml(formatDateStr(f.date)) + '</span>' +
+        '</div>';
+      }).join('');
+    }
+    renderStats();
+  }
+  render();
+ 
+  var starButtons = document.querySelectorAll('#starRating button');
+  starButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      selectedRating = Number(btn.dataset.val);
+      starButtons.forEach(function (b) {
+        b.classList.toggle('active', Number(b.dataset.val) <= selectedRating);
+        b.style.color = Number(b.dataset.val) <= selectedRating ? '#d99a2b' : '';
+      });
+    });
+  });
+ 
+  document.getElementById('feedbackForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = document.getElementById('f-name').value.trim();
+    var dept = document.getElementById('f-dept').value;
+    var subject = document.getElementById('f-subject').value.trim();
+    var message = document.getElementById('f-message').value.trim();
+ 
+    if (!name || !subject || !message) { alert('Please enter your name, a subject, and your message.'); return; }
+    if (!selectedRating) { alert('Please select a star rating.'); return; }
+ 
+    feedbackList.push({
+      name: name, dept: dept, rating: selectedRating, subject: subject, message: message,
+      date: new Date().toISOString().slice(0, 10)
+    });
+    saveFeedback(feedbackList);
+    render();
+ 
+    document.getElementById('feedbackForm').reset();
+    selectedRating = 0;
+    starButtons.forEach(function (b) { b.classList.remove('active'); b.style.color = ''; });
+ 
+    var flash = document.getElementById('feedbackFlash');
+    flash.classList.add('show');
+    setTimeout(function () { flash.classList.remove('show'); }, 2800);
+  });
+ 
+} catch (initErr) {
+  console.error('MediSync Feedback.html failed to initialize:', initErr);
+  document.body.insertAdjacentHTML('afterbegin',
+    '<div style="background:#fee;border:1px solid #e85d4e;color:#a3392d;padding:1rem 2.2rem;font-family:monospace;font-size:0.85rem;white-space:pre-wrap;">This page hit a script error and could not load its data: ' +
+    (initErr && initErr.message ? initErr.message : initErr) + '</div>'
+  );
+}
+</script>
+ 
+</body>
+</html>

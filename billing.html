@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment — MediSync HMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sky-900: #0a3554; --sky-800: #0d4266; --sky-700: #10557f; --sky-600: #1478a8;
+  --sky-500: #1c9fe0; --sky-400: #3fb6ea; --sky-300: #7ccdf0; --sky-100: #e4f4fb;
+  --paper: #eef5fb; --paper-line: #dbe8ef; --ink: #142c3a; --slate: #5c7284; --slate-light: #94a8b6;
+  --pulse: #e85d4e; --amber: #d99a2b; --good: #2e9a6c;
+  --font-display: "Fraunces", "Iowan Old Style", serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; min-height: 100vh; background: var(--sky-500); color: var(--ink); font-family: var(--font-body); }
+a { color: inherit; text-decoration: none; }
+button, select, input { font-family: var(--font-body); }
+ 
+.shell { display: flex; min-height: 100vh; padding: 1.2rem; gap: 1.2rem; }
+ 
+.icon-rail {
+  width: 76px; flex-shrink: 0;
+  background: linear-gradient(180deg, var(--sky-600), var(--sky-900));
+  border-radius: 28px;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 1.4rem 0 1.2rem; gap: 0.6rem;
+}
+.icon-rail .brand {
+  width: 42px; height: 42px; border-radius: 13px; background: rgba(255,255,255,0.95);
+  display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; overflow: hidden;
+}
+.icon-rail .brand img { width: 100%; height: 100%; object-fit: contain; }
+.icon-rail a {
+  width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.75); transition: background 0.15s, color 0.15s;
+}
+.icon-rail a svg { width: 20px; height: 20px; }
+.icon-rail a:hover { background: rgba(255,255,255,0.12); color: #fff; }
+.icon-rail a.active { background: #fff; color: var(--sky-700); }
+.icon-rail .spacer { flex: 1; }
+.icon-rail .logout { color: rgba(255,178,163,0.85); }
+.icon-rail .logout:hover { background: rgba(232,93,78,0.25); color: #fff; }
+ 
+.panel {
+  flex: 1; min-width: 0; background: var(--paper); border-radius: 28px;
+  padding: 1.6rem 2rem 2.2rem; overflow-y: auto;
+}
+.panel-top {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.6rem; flex-wrap: wrap; gap: 0.8rem;
+}
+.panel-top h1 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 1.5rem; color: var(--ink); }
+.panel-top-right { display: flex; align-items: center; gap: 0.8rem; }
+.rt-icon { width: 38px; height: 38px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; color: var(--slate); box-shadow: 0 2px 8px rgba(10,53,84,0.08); }
+.rt-icon svg { width: 17px; height: 17px; }
+.rt-profile { display: flex; align-items: center; gap: 0.6rem; background: #fff; border-radius: 999px; padding: 0.35rem 0.9rem 0.35rem 0.35rem; box-shadow: 0 2px 8px rgba(10,53,84,0.08); }
+.rt-profile img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
+.rt-profile span { font-size: 0.85rem; font-weight: 600; }
+ 
+.layout { display: grid; grid-template-columns: 1.2fr 1fr; gap: 1.4rem; align-items: start; }
+ 
+.card { background: #fff; border-radius: 18px; padding: 1.5rem 1.6rem; box-shadow: 0 6px 20px rgba(10,53,84,0.06); margin-bottom: 1.2rem; }
+.card h2 { margin: 0 0 0.2rem; font-size: 1.05rem; font-weight: 700; }
+.card .sub { margin: 0 0 1.2rem; font-size: 0.82rem; color: var(--slate); }
+ 
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.field { margin-bottom: 1rem; }
+.field label { display: flex; align-items: center; gap: 0.35rem; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--ink); }
+.field label .hint-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--paper-line); color: var(--slate); font-size: 0.62rem; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+.field input, .field select {
+  width: 100%; padding: 0.72rem 0.9rem; border-radius: 10px; border: 1px solid var(--paper-line);
+  background: #fbfdfe; font-size: 0.88rem; color: var(--ink);
+}
+.field input:focus, .field select:focus { outline: none; border-color: var(--sky-400); box-shadow: 0 0 0 3px var(--sky-100); background: #fff; }
+.field input::placeholder { color: var(--slate-light); }
+ 
+.items-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-bottom: 1rem; }
+.items-table th { text-align: left; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--slate); padding: 0.55rem 0.3rem; border-bottom: 1px solid var(--paper-line); }
+.items-table td { padding: 0.6rem 0.3rem; border-bottom: 1px solid var(--paper-line); }
+.totals { display: flex; flex-direction: column; gap: 0.4rem; align-items: flex-end; }
+.totals .t-row { display: flex; justify-content: space-between; width: 220px; font-size: 0.88rem; }
+.totals .t-row.total { font-weight: 700; font-size: 1.05rem; border-top: 1px solid var(--paper-line); padding-top: 0.5rem; margin-top: 0.2rem; }
+ 
+.method-row { display: flex; gap: 0.9rem; flex-wrap: wrap; margin-bottom: 1.3rem; }
+.method-tile {
+  display: flex; align-items: center; gap: 0.6rem; border: 1px solid var(--paper-line); border-radius: 12px;
+  padding: 0.7rem 1rem; cursor: pointer; background: #fbfdfe; transition: border-color 0.15s, background 0.15s;
+}
+.method-tile:hover { border-color: var(--sky-400); }
+.method-tile.selected { border-color: var(--sky-500); background: var(--sky-100); }
+.method-tile .m-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 0.78rem; flex-shrink: 0; }
+.method-tile.cash .m-icon { background: var(--good); }
+.method-tile.card .m-icon { background: linear-gradient(135deg,#eb5b3c,#f2a729); }
+.method-tile.paypal .m-icon { background: #1a3a8f; }
+.method-tile.applepay .m-icon { background: #000; }
+.method-tile span.m-label { font-size: 0.86rem; font-weight: 600; }
+.method-tile .radio { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--paper-line); margin-left: 0.4rem; position: relative; }
+.method-tile.selected .radio { border-color: var(--sky-500); }
+.method-tile.selected .radio::after { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: var(--sky-500); }
+ 
+.card-fields { display: none; }
+.card-fields.show { display: block; }
+.stub-note { font-size: 0.82rem; color: var(--slate); background: var(--paper); border-radius: 10px; padding: 0.8rem 1rem; display: none; }
+.stub-note.show { display: block; }
+ 
+.btn-pay {
+  width: 100%; background: var(--sky-900); color: #fff; border: none; padding: 0.9rem; border-radius: 12px;
+  font-size: 0.95rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+}
+.btn-pay:hover { background: var(--sky-800); }
+.btn-pay svg { width: 17px; height: 17px; }
+ 
+.receipt-overlay {
+  position: fixed; inset: 0; background: rgba(10,53,84,0.55); display: none; align-items: center; justify-content: center;
+  z-index: 60; padding: 1.5rem;
+}
+.receipt-overlay.show { display: flex; }
+.receipt-doc {
+  background: #fff; width: 100%; max-width: 620px; max-height: 92vh; overflow-y: auto;
+  border-radius: 14px; box-shadow: 0 30px 70px rgba(10,53,84,0.4);
+}
+.receipt-inner { padding: 2.2rem 2.4rem 1.4rem; }
+.receipt-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.6rem; }
+.receipt-head h1 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 1.7rem; letter-spacing: -0.01em; }
+.receipt-brand { text-align: right; }
+.receipt-brand img { width: 46px; height: 46px; border-radius: 10px; object-fit: contain; margin-bottom: 0.3rem; }
+.receipt-brand div { font-size: 0.78rem; font-weight: 700; color: var(--sky-700); letter-spacing: 0.02em; }
+ 
+.receipt-parties { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; padding-bottom: 1.1rem; margin-bottom: 1.1rem; border-bottom: 1px solid var(--paper-line); }
+.receipt-parties .rp-col { border-left: 3px solid var(--sky-500); padding-left: 0.8rem; }
+.receipt-parties h4 { margin: 0 0 0.4rem; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--slate); }
+.receipt-parties p { margin: 0; font-size: 0.85rem; line-height: 1.55; }
+.receipt-parties p.name { font-weight: 700; font-size: 0.92rem; margin-bottom: 0.15rem; }
+ 
+.receipt-meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; padding-bottom: 1rem; margin-bottom: 1.1rem; border-bottom: 1px solid var(--paper-line); }
+.receipt-meta .rm-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--slate); margin-bottom: 0.2rem; }
+.receipt-meta .rm-val { font-size: 0.9rem; font-weight: 700; }
+ 
+.receipt-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; margin-bottom: 1.2rem; }
+.receipt-table th { background: #faf6ee; text-align: left; padding: 0.6rem 0.7rem; font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.02em; }
+.receipt-table td { padding: 0.6rem 0.7rem; border-bottom: 1px solid var(--paper-line); }
+.receipt-table th:last-child, .receipt-table td:last-child { text-align: right; }
+ 
+.receipt-bottom { display: flex; justify-content: space-between; gap: 1.4rem; margin-bottom: 1.4rem; }
+.receipt-notes { flex: 1; border: 1px solid var(--paper-line); border-radius: 10px; padding: 0.9rem 1rem; }
+.receipt-notes h4 { margin: 0 0 0.4rem; font-size: 0.82rem; font-weight: 700; }
+.receipt-notes p { margin: 0; font-size: 0.8rem; color: var(--slate); line-height: 1.5; }
+.receipt-totals { width: 200px; flex-shrink: 0; }
+.receipt-totals .rt-row { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 0.3rem 0; }
+.receipt-totals .rt-row.grand { font-weight: 700; font-size: 1rem; border-top: 1px solid var(--paper-line); padding-top: 0.5rem; margin-top: 0.2rem; }
+ 
+.receipt-footer {
+  background: var(--sky-700); color: #fff; padding: 0.9rem 2.4rem; border-radius: 0 0 14px 14px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;
+}
+.receipt-footer .rf-left { display: flex; align-items: center; gap: 0.7rem; font-size: 0.82rem; font-weight: 700; }
+.receipt-footer .rf-left svg { width: 15px; height: 15px; }
+.receipt-footer .rf-right { font-size: 0.8rem; opacity: 0.9; }
+ 
+.receipt-actions { display: flex; gap: 0.7rem; padding: 0 2.4rem 1.8rem; }
+.receipt-actions button {
+  flex: 1; padding: 0.7rem; border-radius: 10px; font-size: 0.86rem; font-weight: 600; cursor: pointer;
+}
+.receipt-actions .btn-print { background: var(--sky-900); color: #fff; border: none; }
+.receipt-actions .btn-close { background: var(--paper); color: var(--ink); border: 1px solid var(--paper-line); }
+ 
+@media print {
+  body * { visibility: hidden; }
+  .receipt-doc, .receipt-doc * { visibility: visible; }
+  .receipt-doc { position: absolute; top: 0; left: 0; width: 100%; max-height: none; box-shadow: none; }
+  .receipt-actions { display: none; }
+}
+ 
+@media (max-width: 1080px) {
+  .layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+  .shell { flex-direction: column; padding: 0.8rem; }
+  .icon-rail { width: 100%; flex-direction: row; border-radius: 20px; padding: 0.8rem; }
+  .icon-rail .brand { margin-bottom: 0; }
+  .icon-rail .spacer { display: none; }
+  .panel { border-radius: 20px; padding: 1.2rem; }
+  .field-row { grid-template-columns: 1fr; }
+  .receipt-meta { grid-template-columns: 1fr 1fr; }
+  .receipt-parties { grid-template-columns: 1fr; }
+  .receipt-bottom { flex-direction: column; }
+  .receipt-totals { width: 100%; }
+}
+</style>
+</head>
+<body>
+ 
+<div class="shell">
+ 
+  <aside class="icon-rail">
+    <div class="brand"><img src="medisync_logo.jpeg" alt="MediSync"></div>
+    <a href="dashboard.html" title="Dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+    </a>
+    <a href="Appointment.html" title="Appointments">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+    </a>
+    <a href="billing.html" class="active" title="Billing">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 14h3"/></svg>
+    </a>
+    <a href="reports.html" title="Reports">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M9 13v4M12 11v6M15 15v2"/></svg>
+    </a>
+    <a href="profile.html" title="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </a>
+    <span class="spacer"></span>
+    <a href="login_page.html" class="logout" title="Logout">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </a>
+  </aside>
+ 
+  <main class="panel">
+    <div class="panel-top">
+      <h1>Payment</h1>
+      <div class="panel-top-right">
+        <div class="rt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg></div>
+        <div class="rt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+        <div class="rt-profile"><img src="profile_icon.jpg" alt=""><span id="topProfileName">Admin User</span></div>
+      </div>
+    </div>
+ 
+    <div class="layout">
+ 
+      <!-- Left column: patient + invoice -->
+      <div>
+        <div class="card">
+          <h2>Patient Details</h2>
+          <p class="sub">Confirm who this payment is for.</p>
+ 
+          <div class="field">
+            <label>Select Pending Invoice</label>
+            <select id="invoicePicker"></select>
+          </div>
+ 
+          <div class="field-row">
+            <div class="field">
+              <label>Full Name <span class="hint-dot">i</span></label>
+              <input type="text" id="p-name" placeholder="Patient name">
+            </div>
+            <div class="field">
+              <label>Gender <span class="hint-dot">i</span></label>
+              <select id="p-gender"><option>Male</option><option>Female</option><option>Other</option></select>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Phone Number <span class="hint-dot">i</span></label>
+              <input type="tel" id="p-phone" placeholder="+94 77 000 0000">
+            </div>
+            <div class="field">
+              <label>Email (Optional) <span class="hint-dot">i</span></label>
+              <input type="email" id="p-email" placeholder="patient@example.com">
+            </div>
+          </div>
+          <div class="field">
+            <label>Full Address <span class="hint-dot">i</span></label>
+            <input type="text" id="p-address" placeholder="Enter address here">
+          </div>
+        </div>
+ 
+        <div class="card">
+          <h2>Invoice Items</h2>
+          <p class="sub" id="invoiceSub">Charges included in this bill.</p>
+          <table class="items-table">
+            <thead><tr><th>Service</th><th>Qty</th><th>Cost (Rs.)</th></tr></thead>
+            <tbody id="itemsBody"></tbody>
+          </table>
+          <div class="totals">
+            <div class="t-row"><span>Subtotal</span><span id="tSubtotal">Rs. 0.00</span></div>
+            <div class="t-row"><span>Tax</span><span>Rs. 0.00</span></div>
+            <div class="t-row total"><span>Total Due</span><span id="tTotal">Rs. 0.00</span></div>
+          </div>
+        </div>
+      </div>
+ 
+      <div class="card">
+        <h2>Payment Details / Methods</h2>
+        <p class="sub">Choose how this bill will be settled.</p>
+ 
+        <div class="method-row" id="methodRow">
+          <div class="method-tile cash selected" data-method="Cash">
+            <span class="m-icon">Rs</span><span class="m-label">Cash</span><span class="radio"></span>
+          </div>
+          <div class="method-tile card" data-method="Card">
+            <span class="m-icon">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            </span>
+            <span class="m-label">Credit / Debit Card</span><span class="radio"></span>
+          </div>
+          <div class="method-tile paypal" data-method="PayPal">
+            <span class="m-icon">P</span><span class="m-label">PayPal</span><span class="radio"></span>
+          </div>
+          <div class="method-tile applepay" data-method="Apple Pay">
+            <span class="m-icon">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="#fff"><path d="M16.5 6.5c-.9 1-2.2 1.7-3.5 1.6-.2-1.3.4-2.7 1.2-3.6.9-1 2.4-1.7 3.6-1.8.1 1.4-.4 2.7-1.3 3.8zM20.1 17c-.5 1.1-.7 1.6-1.3 2.6-.9 1.4-2.1 3.1-3.7 3.1-1.4 0-1.8-.9-3.7-.9s-2.4.9-3.7.9c-1.5 0-2.7-1.6-3.6-3-2.5-3.9-2.8-8.6-1.2-11 .9-1.4 2.4-2.3 4-2.3s2.5.9 3.7.9 2.1-.9 3.7-.9c1.4 0 2.9.8 3.8 2.1-3.4 1.9-2.8 6.6.9 8z"/></svg>
+            </span>
+            <span class="m-label">Apple Pay</span><span class="radio"></span>
+          </div>
+        </div>
+ 
+        <div class="card-fields" id="cardFields">
+          <div class="field-row">
+            <div class="field">
+              <label>First Name <span class="hint-dot">i</span></label>
+              <input type="text" id="c-first" placeholder="Enter here">
+            </div>
+            <div class="field">
+              <label>Last Name <span class="hint-dot">i</span></label>
+              <input type="text" id="c-last" placeholder="Enter here">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Card Number <span class="hint-dot">i</span></label>
+              <input type="text" id="c-number" placeholder="1234 5678 9101" maxlength="19">
+            </div>
+            <div class="field">
+              <label>Expiry Date <span class="hint-dot">i</span></label>
+              <input type="text" id="c-expiry" placeholder="dd/mm/yy" maxlength="5">
+            </div>
+          </div>
+        </div>
+ 
+        <div class="stub-note" id="paypalNote">You'll be redirected to PayPal to complete this payment — hook this up to your PayPal integration.</div>
+        <div class="stub-note" id="applepayNote">The Apple Pay sheet will appear here — hook this up to your Apple Pay integration.</div>
+ 
+        <button type="button" class="btn-pay" id="payNowBtn" style="margin-top:1.2rem;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Pay Now
+        </button>
+      </div>
+ 
+    </div>
+  </main>
+</div>
+ 
+<div class="receipt-overlay" id="receiptOverlay">
+  <div class="receipt-doc">
+    <div class="receipt-inner">
+      <div class="receipt-head">
+        <h1>MEDICAL<br>RECEIPT</h1>
+        <div class="receipt-brand">
+          <img src="medisync_logo.jpeg" alt="MediSync">
+          <div>MEDISYNC<br>HOSPITAL</div>
+        </div>
+      </div>
+ 
+      <div class="receipt-parties">
+        <div class="rp-col">
+          <h4>Patient Information</h4>
+          <p class="name" id="rPatientName">&mdash;</p>
+          <p id="rPatientAddress">&mdash;</p>
+          <p id="rPatientPhone">&mdash;</p>
+          <p id="rPatientEmail">&mdash;</p>
+        </div>
+        <div class="rp-col">
+          <h4>Doctor's Information</h4>
+          <p class="name" id="rDoctorName">&mdash;</p>
+          <p>MediSync Hospital, Colombo</p>
+          <p>+94 11 234 5678</p>
+          <p>info@medisync-hms.com</p>
+        </div>
+      </div>
+ 
+      <div class="receipt-meta">
+        <div><div class="rm-label">Receipt No</div><div class="rm-val" id="rReceiptNo">&mdash;</div></div>
+        <div><div class="rm-label">Date</div><div class="rm-val" id="rDate">&mdash;</div></div>
+        <div><div class="rm-label">Method</div><div class="rm-val" id="rMethod">&mdash;</div></div>
+        <div><div class="rm-label">Amount Paid</div><div class="rm-val" id="rAmountDue">&mdash;</div></div>
+      </div>
+ 
+      <table class="receipt-table">
+        <thead><tr><th>Service</th><th>Qty</th><th>Cost</th></tr></thead>
+        <tbody id="rItemsBody"></tbody>
+      </table>
+ 
+      <div class="receipt-bottom">
+        <div class="receipt-notes">
+          <h4>Notes</h4>
+          <p id="rNotes">Payment recorded and synced to Billing. For queries, contact info@medisync-hms.com.</p>
+        </div>
+        <div class="receipt-totals">
+          <div class="rt-row"><span>Subtotal</span><span id="rSubtotal">Rs. 0.00</span></div>
+          <div class="rt-row"><span>Tax</span><span>Rs. 0.00</span></div>
+          <div class="rt-row grand"><span>Total</span><span id="rTotal">Rs. 0.00</span></div>
+        </div>
+      </div>
+    </div>
+ 
+    <div class="receipt-footer">
+      <div class="rf-left">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg>
+        MediSync HMS
+      </div>
+      <div class="rf-right">Thank you for choosing MediSync</div>
+    </div>
+ 
+    <div class="receipt-actions">
+      <button type="button" class="btn-print" id="printReceiptBtn">Print Receipt</button>
+      <button type="button" class="btn-close" id="closeReceiptBtn">Close</button>
+    </div>
+  </div>
+</div>
+ 
+<script>
+try {
+ 
+  var BILLING_STORAGE_KEY = 'medisync_billing_data';
+ 
+  var seedInvoices = [
+    { no: 'INV-3021', patient: 'R. Fernando', dept: 'Cardiology', doctor: 'Dr. Henrietta Mitchell', amount: 84500, status: 'Pending', items: [{ desc: 'Ward admission — 3 nights', qty: 1, price: 84500 }] },
+    { no: 'INV-3017', patient: 'D. Rajapaksa', dept: 'Orthopedics', doctor: 'Dr. David', amount: 4000, status: 'Pending', items: [{ desc: 'Consultation — Orthopedics', qty: 1, price: 4000 }] },
+    { no: 'INV-3015', patient: 'S. Wickramasinghe', dept: 'Pharmacy', doctor: 'Dr. Smith', amount: 3200, status: 'Pending', items: [{ desc: 'Medicines dispensed', qty: 1, price: 3200 }] }
+  ];
+ 
+  function loadBillingData() {
+    try {
+      var raw = localStorage.getItem(BILLING_STORAGE_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.invoices) && Array.isArray(parsed.paidReceipts)) return parsed;
+      }
+    } catch (e) {}
+    var seeded = { invoices: seedInvoices, paidReceipts: [], nextInvoiceNum: 3022, nextReceiptNum: 9002 };
+    saveBillingData(seeded);
+    return seeded;
+  }
+  function saveBillingData(data) {
+    try { localStorage.setItem(BILLING_STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+ 
+  var billingData = loadBillingData();
+  var pendingInvoices = billingData.invoices.filter(function (i) { return i.status !== 'Paid'; });
+  if (!pendingInvoices.length) pendingInvoices = seedInvoices;
+ 
+  var selectedInvoice = null;
+  var selectedMethod = 'Cash';
+ 
+  function money(n) { return 'Rs. ' + Number(n).toFixed(2); }
+  function escapeHtml(str) {
+    return String(str == null ? '' : str).replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+ 
+  var picker = document.getElementById('invoicePicker');
+  picker.innerHTML = pendingInvoices.map(function (inv, idx) {
+    return '<option value="' + idx + '">' + escapeHtml(inv.no) + ' \u2014 ' + escapeHtml(inv.patient) + ' (' + money(inv.amount) + ')</option>';
+  }).join('');
+ 
+  function applyInvoice(inv) {
+    selectedInvoice = inv;
+    document.getElementById('p-name').value = inv.patient;
+    document.getElementById('invoiceSub').textContent = inv.no + ' \u2014 ' + (inv.dept || 'General');
+ 
+    var itemsBody = document.getElementById('itemsBody');
+    itemsBody.innerHTML = inv.items.map(function (it) {
+      return '<tr><td>' + escapeHtml(it.desc) + '</td><td>' + escapeHtml(it.qty) + '</td><td>' + money(it.price) + '</td></tr>';
+    }).join('');
+ 
+    var subtotal = inv.items.reduce(function (s, it) { return s + (Number(it.qty) || 1) * (Number(it.price) || 0); }, 0);
+    document.getElementById('tSubtotal').textContent = money(subtotal);
+    document.getElementById('tTotal').textContent = money(subtotal);
+  }
+ 
+  applyInvoice(pendingInvoices[0]);
+  picker.addEventListener('change', function () { applyInvoice(pendingInvoices[Number(picker.value)]); });
+ 
+  var cardFields = document.getElementById('cardFields');
+  var paypalNote = document.getElementById('paypalNote');
+  var applepayNote = document.getElementById('applepayNote');
+ 
+  document.querySelectorAll('.method-tile').forEach(function (tile) {
+    tile.addEventListener('click', function () {
+      document.querySelectorAll('.method-tile').forEach(function (t) { t.classList.remove('selected'); });
+      tile.classList.add('selected');
+      selectedMethod = tile.dataset.method;
+      cardFields.classList.toggle('show', selectedMethod === 'Card');
+      paypalNote.classList.toggle('show', selectedMethod === 'PayPal');
+      applepayNote.classList.toggle('show', selectedMethod === 'Apple Pay');
+    });
+  });
+ 
+  document.getElementById('c-number').addEventListener('input', function (e) {
+    var digits = e.target.value.replace(/\D/g, '').slice(0, 16);
+    e.target.value = digits.replace(/(.{4})/g, '$1 ').trim();
+  });
+  document.getElementById('c-expiry').addEventListener('input', function (e) {
+    var digits = e.target.value.replace(/\D/g, '').slice(0, 4);
+    e.target.value = digits.length > 2 ? digits.slice(0, 2) + '/' + digits.slice(2) : digits;
+  });
+ 
+  document.getElementById('payNowBtn').addEventListener('click', function () {
+    if (!selectedInvoice) return;
+ 
+    if (selectedMethod === 'Card') {
+      var num = document.getElementById('c-number').value.replace(/\s/g, '');
+      if (num.length < 12) { alert('Please enter a valid card number.'); return; }
+    }
+ 
+    var data = loadBillingData();
+    var invRecord = data.invoices.find(function (i) { return i.no === selectedInvoice.no; });
+    if (invRecord) {
+      invRecord.status = 'Paid';
+    } else {
+      data.invoices.unshift({ no: selectedInvoice.no, patient: selectedInvoice.patient, dept: selectedInvoice.dept, amount: selectedInvoice.amount, status: 'Paid', items: selectedInvoice.items });
+    }
+ 
+    var receiptNo = 'RC-' + (data.nextReceiptNum++);
+    var receipt = {
+      no: receiptNo, invoiceNo: selectedInvoice.no, patient: selectedInvoice.patient,
+      amount: selectedInvoice.amount, method: selectedMethod,
+      date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+      items: selectedInvoice.items
+    };
+    data.paidReceipts.unshift(receipt);
+    saveBillingData(data);
+ 
+    showReceipt(selectedInvoice, receipt);
+  });
+ 
+  function showReceipt(inv, receipt) {
+    document.getElementById('rPatientName').textContent = document.getElementById('p-name').value || inv.patient;
+    document.getElementById('rPatientAddress').textContent = document.getElementById('p-address').value || 'Address on file';
+    document.getElementById('rPatientPhone').textContent = document.getElementById('p-phone').value || 'Phone on file';
+    document.getElementById('rPatientEmail').textContent = document.getElementById('p-email').value || 'Email on file';
+    document.getElementById('rDoctorName').textContent = inv.doctor || 'Attending Physician';
+    document.getElementById('rReceiptNo').textContent = receipt.no;
+    document.getElementById('rDate').textContent = receipt.date;
+    document.getElementById('rMethod').textContent = receipt.method;
+    document.getElementById('rAmountDue').textContent = money(receipt.amount);
+ 
+    document.getElementById('rItemsBody').innerHTML = inv.items.map(function (it) {
+      return '<tr><td>' + escapeHtml(it.desc) + '</td><td>' + escapeHtml(it.qty) + '</td><td>' + money(it.price) + '</td></tr>';
+    }).join('');
+    document.getElementById('rSubtotal').textContent = money(receipt.amount);
+    document.getElementById('rTotal').textContent = money(receipt.amount);
+ 
+    document.getElementById('receiptOverlay').classList.add('show');
+  }
+ 
+  document.getElementById('closeReceiptBtn').addEventListener('click', function () {
+    document.getElementById('receiptOverlay').classList.remove('show');
+    window.location.reload();
+  });
+  document.getElementById('printReceiptBtn').addEventListener('click', function () { window.print(); });
+ 
+} catch (initErr) {
+  console.error('MediSync payment.html failed to initialize:', initErr);
+  document.body.insertAdjacentHTML('afterbegin',
+    '<div style="background:#fee;border:1px solid #e85d4e;color:#a3392d;padding:1rem 2.2rem;font-family:monospace;font-size:0.85rem;white-space:pre-wrap;">This page hit a script error and could not load its data: ' +
+    (initErr && initErr.message ? initErr.message : initErr) + '</div>'
+  );
+}
+</script>
+ 
+</body>
+</html>
+ 

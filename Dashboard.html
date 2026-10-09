@@ -1,0 +1,672 @@
+<html>
+<head>
+<title>Dashboard — MediSync HMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sky-900: #0a3554;
+  --sky-800: #0d4266;
+  --sky-700: #10557f;
+  --sky-600: #1478a8;
+  --sky-500: #1c9fe0;
+  --sky-400: #3fb6ea;
+  --sky-300: #7ccdf0;
+  --sky-100: #e4f4fb;
+  --paper: #f2f8fb;
+  --paper-line: #dbe8ef;
+  --ink: #142c3a;
+  --slate: #5c7284;
+  --slate-light: #94a8b6;
+  --pulse: #e85d4e;
+  --amber: #d99a2b;
+  --good: #2e9a6c;
+  --font-display: "Fraunces", "Iowan Old Style", serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+}
+ 
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; min-height: 100vh; background: var(--paper); color: var(--ink); font-family: var(--font-body); }
+a { color: inherit; text-decoration: none; }
+button { font-family: var(--font-body); }
+ 
+.app-shell { display: flex; min-height: 100vh; }
+ 
+.sidebar {
+  width: 240px; flex-shrink: 0;
+  background: linear-gradient(180deg, var(--sky-900), var(--sky-800));
+  color: #eaf5fb;
+  display: flex; flex-direction: column;
+  padding: 1.6rem 1.1rem;
+  position: sticky; top: 0; height: 100vh;
+}
+.sidebar-brand { display: flex; align-items: center; gap: 0.7rem; padding: 0 0.4rem 1.6rem; }
+.sidebar-brand img {
+  width: 42px; height: 42px; border-radius: 11px;
+  background: rgba(255,255,255,0.95); object-fit: contain; padding: 4px;
+}
+.sidebar-brand .brand-text strong {
+  display: block; font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; letter-spacing: 0.01em;
+}
+.sidebar-brand .brand-text span {
+  display: block; font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--sky-300); margin-top: 0.1rem;
+}
+ 
+.sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
+.sidebar-nav a {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.68rem 0.8rem; border-radius: 10px;
+  font-size: 0.9rem; font-weight: 500; color: rgba(234,245,251,0.82);
+  transition: background 0.15s, color 0.15s;
+}
+.sidebar-nav a svg { width: 18px; height: 18px; flex-shrink: 0; }
+.sidebar-nav a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.sidebar-nav a.active { background: var(--sky-500); color: #fff; }
+ 
+.sidebar-logout {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.68rem 0.8rem; border-radius: 10px;
+  font-size: 0.9rem; font-weight: 500; color: rgba(234,245,251,0.72);
+  transition: background 0.15s, color 0.15s;
+}
+.sidebar-logout svg { width: 18px; height: 18px; }
+.sidebar-logout:hover { background: rgba(232,93,78,0.18); color: #ffb3a8; }
+ 
+.main-area { flex: 1; min-width: 0; }
+ 
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; padding: 1.3rem 2.2rem;
+  background: #fff; border-bottom: 1px solid var(--paper-line);
+  flex-wrap: wrap;
+}
+.topbar h1 {
+  font-family: var(--font-display); font-weight: 600; font-size: 1.55rem;
+  margin: 0; color: var(--ink);
+}
+.topbar p { margin: 0.2rem 0 0; font-size: 0.85rem; color: var(--slate); }
+ 
+.topbar-right { display: flex; align-items: center; gap: 0.8rem; }
+ 
+.profile-link {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--sky-500); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  transition: filter 0.15s, box-shadow 0.15s;
+  box-shadow: 0 0 0 2px var(--sky-100);
+}
+.profile-link:hover { filter: brightness(1.08); }
+.profile-link svg { width: 20px; height: 20px; }
+.profile-link img { width: 100%; height: 100%; object-fit: cover; display: block; }
+ 
+main { padding: 2rem 2.2rem 3rem; }
+ 
+.service-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1.2rem; margin-bottom: 1.6rem;
+}
+.service-card {
+  position: relative; border-radius: 16px; overflow: hidden;
+  min-height: 210px; display: flex; flex-direction: column; justify-content: flex-end;
+  color: #fff; background: var(--sky-800);
+}
+.service-card .bg-photo {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; z-index: 0;
+}
+.service-card .bg-overlay {
+  position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(180deg, rgba(10,53,84,0.15) 0%, rgba(10,53,84,0.88) 85%);
+}
+.service-card .content { position: relative; z-index: 2; padding: 1.1rem 1.2rem 1.2rem; }
+.service-card .badge {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.3);
+  padding: 0.22rem 0.6rem; border-radius: 999px;
+  font-size: 0.68rem; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase;
+  margin-bottom: 0.6rem;
+}
+.service-card .badge svg { width: 12px; height: 12px; }
+.service-card h3 { margin: 0 0 0.4rem; font-family: var(--font-body); font-weight: 700; font-size: 1.02rem; }
+.service-card p { margin: 0; font-size: 0.79rem; line-height: 1.45; color: rgba(255,255,255,0.85); }
+ 
+.service-card.chatbot {
+  background: linear-gradient(160deg, var(--sky-600), var(--sky-900));
+}
+.service-card.chatbot .chat-decor {
+  position: absolute; right: -18px; top: -18px; z-index: 1;
+  width: 130px; height: 130px; opacity: 0.9;
+}
+.service-card.chatbot .content { position: relative; z-index: 2; }
+ 
+.facility-thumbs { display: flex; gap: 0.4rem; margin-top: 0.7rem; }
+.facility-thumbs .fth {
+  flex: 1; border-radius: 8px; overflow: hidden; position: relative; height: 44px;
+  border: 1px solid rgba(255,255,255,0.25);
+}
+.facility-thumbs .fth img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.facility-thumbs .fth span {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  font-size: 0.56rem; font-weight: 600; text-align: center;
+  background: rgba(10,53,84,0.7); color: #fff; padding: 0.1rem 0;
+}
+ 
+@media (max-width: 1080px) {
+  .service-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .service-grid { grid-template-columns: 1fr; }
+}
+ 
+.stat-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1.2rem; margin-bottom: 1.4rem;
+}
+.stat-card {
+  border-radius: 16px; padding: 1.4rem 1.5rem;
+  color: #fff; position: relative; overflow: hidden;
+  min-height: 148px; display: flex; flex-direction: column; justify-content: center;
+}
+.stat-card::after {
+  content: ""; position: absolute; right: -30px; bottom: -30px;
+  width: 140px; height: 140px; border-radius: 50%;
+  background: rgba(255,255,255,0.10);
+}
+.stat-card .icon-badge {
+  position: absolute; right: 1.2rem; top: 1.2rem;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(255,255,255,0.22);
+  display: flex; align-items: center; justify-content: center;
+}
+.stat-card .icon-badge svg { width: 22px; height: 22px; }
+ 
+.stat-card .live-tag {
+  position: absolute; left: 1.4rem; top: 1.3rem;
+  display: flex; align-items: center; gap: 0.35rem;
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+  color: rgba(255,255,255,0.85);
+}
+.stat-card .live-tag .live-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: #fff;
+  animation: live-pulse 1.6s ease-in-out infinite;
+}
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255,255,255,0.5); }
+  50% { opacity: 0.55; box-shadow: 0 0 0 4px rgba(255,255,255,0); }
+}
+ 
+.stat-card h3 { margin: 1.5rem 0 0.15rem; font-size: 0.92rem; font-weight: 700; max-width: 85%; }
+.stat-card .cap { margin: 0 0 0.7rem; font-size: 0.74rem; opacity: 0.85; max-width: 85%; }
+.stat-card .value {
+  margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 2.1rem;
+  transition: transform 0.25s ease;
+}
+.stat-card .value.bump { animation: value-bump 0.4s ease; }
+@keyframes value-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+.stat-card .delta {
+  display: inline-flex; align-items: center; gap: 0.2rem;
+  font-size: 0.72rem; font-weight: 600; margin-left: 0.55rem; opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.stat-card .delta.show { opacity: 1; }
+.stat-card .delta svg { width: 11px; height: 11px; }
+ 
+.stat-card.c1 { background: linear-gradient(135deg, var(--sky-500), var(--sky-700)); }
+.stat-card.c2 { background: linear-gradient(135deg, var(--sky-400), var(--sky-600)); }
+.stat-card.c3 { background: linear-gradient(135deg, var(--amber), #b5731a); }
+.stat-card.c4 { background: linear-gradient(135deg, var(--pulse), #a83a2e); }
+ 
+.glass-strip {
+  position: relative; overflow: hidden;
+  border-radius: 20px;
+  padding: 1.6rem 1.6rem 1.8rem;
+  margin-bottom: 1.6rem;
+  background: linear-gradient(135deg, #0a1e33, var(--sky-900) 55%, #0d2a44);
+}
+.glass-strip::before {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(63,182,234,0.25), transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(28,159,224,0.22), transparent 50%);
+  pointer-events: none;
+}
+.glass-strip-head {
+  position: relative; z-index: 1;
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 1.1rem; flex-wrap: wrap; gap: 0.4rem;
+}
+.glass-strip-head h2 {
+  margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 1.05rem;
+  color: #fff;
+}
+.glass-strip-head span {
+  font-size: 0.74rem; color: rgba(234,245,251,0.6);
+}
+ 
+.icon-tabs {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 0.9rem;
+}
+.icon-tab {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 14px;
+  padding: 0.9rem 0.7rem 0.85rem;
+  display: flex; flex-direction: column; align-items: center; gap: 0.55rem;
+  text-align: center;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.icon-tab:hover {
+  transform: translateY(-3px);
+  background: rgba(255,255,255,0.14);
+  border-color: rgba(255,255,255,0.32);
+  box-shadow: 0 14px 28px -16px rgba(0,0,0,0.5);
+}
+.icon-tab .icon-wrap {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.icon-tab img {
+  width: 24px; height: 24px; object-fit: cover; border-radius: 5px;
+}
+.icon-tab span {
+  font-size: 0.76rem; font-weight: 600; color: #eaf5fb; line-height: 1.25;
+}
+ 
+@media (max-width: 1080px) {
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+  .icon-tabs { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 760px) {
+  .app-shell { flex-direction: column; }
+  .sidebar { width: 100%; height: auto; position: relative; flex-direction: row; align-items: center; overflow-x: auto; }
+  .sidebar-brand { padding: 0 1rem 0 0; }
+  .sidebar-nav { flex-direction: row; }
+  .sidebar-logout { display: none; }
+  .stat-grid { grid-template-columns: 1fr; }
+  main { padding: 1.4rem 1.2rem 2.4rem; }
+  .topbar { padding: 1rem 1.2rem; }
+}
+@media (max-width: 640px) {
+  .icon-tabs { grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
+  .icon-tab .icon-wrap { width: 32px; height: 32px; }
+  .icon-tab img { width: 20px; height: 20px; }
+  .icon-tab span { font-size: 0.7rem; }
+}
+ 
+.site-footer {
+  background: var(--sky-900); color: rgba(234,245,251,0.85);
+  padding: 2.2rem 2.2rem 1.4rem;
+}
+.footer-grid {
+  display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 2rem;
+  max-width: 1100px; margin: 0 auto; padding-bottom: 1.6rem;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+.footer-brand { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.8rem; }
+.footer-brand img { width: 34px; height: 34px; border-radius: 9px; background: rgba(255,255,255,0.95); object-fit: contain; padding: 3px; }
+.footer-brand strong { font-family: var(--font-display); font-weight: 600; font-size: 1rem; color: #fff; }
+.footer-col p { margin: 0 0 0.8rem; font-size: 0.82rem; line-height: 1.55; color: rgba(234,245,251,0.7); }
+.footer-col h4 {
+  margin: 0 0 0.8rem; font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--sky-300);
+}
+.footer-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.55rem; }
+.footer-col ul li a {
+  font-size: 0.84rem; color: rgba(234,245,251,0.82); transition: color 0.15s;
+  display: inline-flex; align-items: center; gap: 0.5rem;
+}
+.footer-col ul li a:hover { color: #fff; }
+.footer-col ul li a svg { width: 15px; height: 15px; flex-shrink: 0; color: var(--sky-300); }
+.footer-bottom {
+  max-width: 1100px; margin: 0 auto; padding-top: 1.2rem;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.6rem;
+}
+.footer-bottom p { margin: 0; font-size: 0.76rem; color: rgba(234,245,251,0.55); }
+.footer-social { display: flex; gap: 0.6rem; }
+.footer-social a {
+  width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.08);
+  display: flex; align-items: center; justify-content: center; transition: background 0.15s;
+}
+.footer-social a:hover { background: var(--sky-500); }
+.footer-social a svg { width: 15px; height: 15px; color: #fff; }
+ 
+@media (max-width: 900px) {
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .footer-grid { grid-template-columns: 1fr; }
+  .site-footer { padding: 1.8rem 1.2rem 1.2rem; }
+}
+</style>
+</head>
+<body>
+ 
+<div class="app-shell">
+ 
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="medisync_logo.jpeg">
+     <div class="brand-text">
+        <strong>MediSync</strong>
+        <span>Hospital Management System</span>
+      </div>
+    </div>
+ 
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Dashboard
+      </a>
+      <a href="Appointment.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M9 16l2 2 4-4"/></svg>
+        Appointment
+      </a>
+      <a href="patients.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Patients
+      </a>
+      <a href="doctors.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg>
+        Doctors
+      </a>
+      <a href="staff.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Staff
+      </a>
+      <a href="contact.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.68 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.32 1.85.55 2.81.68A2 2 0 0 1 22 16.92Z"/></svg>
+        Contact Us
+      </a>
+      
+      <a href="Feedback.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Feedback
+      </a>
+      
+    </nav>
+ 
+ 
+  </aside>
+ 
+  <div class="main-area">
+ 
+    <header class="topbar">
+      <div>
+        <h1>DASHBOARD</h1>
+        <p>Faster care start with better sync . One pulse . One system </p>
+      </div>
+      <div class="topbar-right">
+        <a href="profile.html" class="profile-link" title="My Profile">
+          <img src="profile_icon.jpg" alt="Profile">
+        </a>
+      </div>
+    </header>
+ 
+    <main>
+ 
+      <div class="service-grid">
+ 
+        <div class="service-card">
+          <img class="bg-photo" src="c.jpg" alt="MediSync staff">
+          <div class="bg-overlay"></div>
+          <div class="content">
+            <span class="badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Staff Service
+            </span>
+            <h3>Dedicated Care Team</h3>
+            <p>Experienced doctors, nurses, and front-desk staff work together to guide you through every visit &mdash; from check-in to consultation.</p>
+          </div>
+        </div>
+ 
+        <div class="service-card">
+           <img class="bg-photo" src="service.jpg">
+ 
+          <div class="bg-overlay"></div>
+          <div class="content">
+            <span class="badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              Always Open
+            </span>
+            <h3>24 Hours, 7 Days a Week</h3>
+            <p>Our emergency and critical care units never close &mdash; round-the-clock support whenever you need it, day or night.</p>
+          </div>
+        </div>
+ 
+        <div class="service-card chatbot">
+           <img class="bg-photo" src="chat.jpg">
+          <svg class="chat-decor" viewBox="0 0 130 130" fill="none">
+            <circle cx="65" cy="65" r="65" fill="rgba(255,255,255,0.08)"/>
+            <rect x="30" y="34" width="56" height="40" rx="10" fill="rgba(255,255,255,0.16)"/>
+            <path d="M42 74l-4 12 14-12" fill="rgba(255,255,255,0.16)"/>
+            <circle cx="46" cy="54" r="4" fill="#fff"/>
+            <circle cx="58" cy="54" r="4" fill="#fff"/>
+            <circle cx="70" cy="54" r="4" fill="#fff"/>
+          </svg>
+          <div class="content">
+            <span class="badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg>
+              MediSync Chatbot
+            </span>
+            <h3>Ask MedAI Anytime</h3>
+            <p>Get instant answers about patient records, schedules, and billing &mdash; our AI assistant is on standby around the clock.</p>
+          </div>
+        </div>
+ 
+        <div class="service-card">
+          <img class="bg-photo" src="ctscan.jpeg" alt="CT and MRI scan facility">
+          <div class="bg-overlay"></div>
+          <div class="content">
+            <span class="badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M3 9h18"/></svg>
+              Facilities
+            </span>
+            <h3>Advanced Diagnostics</h3>
+            <p>CT scans, MRI imaging, dental care, and modern surgical suites &mdash; all under one roof.</p>
+            <div class="facility-thumbs">
+              <div class="fth"><img src="ctscan.jpeg" alt="CT / MRI"><span>CT / MRI</span></div>
+              <div class="fth"><img src="dental.jpeg" alt="Dental"><span>Dental</span></div>
+              <div class="fth"><img src="scan1.jpeg" alt="Surgery"><span>Surgery</span></div>
+            </div>
+          </div>
+        </div>
+ 
+      </div>
+ 
+      <div class="stat-grid">
+ 
+        <div class="stat-card c1">
+          <span class="live-tag"><span class="live-dot"></span>Live</span>
+          <div class="icon-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <h3>Total Patients</h3>
+          <p class="cap">Checked in today</p>
+          <p class="value" id="statPatients" data-target="128">0</p>
+        </div>
+ 
+        <div class="stat-card c2">
+          <span class="live-tag"><span class="live-dot"></span>Live</span>
+          <div class="icon-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          </div>
+          <h3>Today's Appointments</h3>
+          <p class="cap">Scheduled for today</p>
+          <p class="value" id="statAppointments" data-target="56">0</p>
+        </div>
+ 
+        <div class="stat-card c3">
+          <span class="live-tag"><span class="live-dot"></span>Live</span>
+          <div class="icon-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6.5L4.5 17a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L15 8.5V2"/><path d="M9 2h6M8.5 13h7"/></svg>
+          </div>
+          <h3>Laboratory Alerts</h3>
+          <p class="cap">Critical &amp; pending results</p>
+          <p class="value" id="statLabAlerts" data-target="5">0</p>
+        </div>
+ 
+        <div class="stat-card c4">
+          <span class="live-tag"><span class="live-dot"></span>Live</span>
+          <div class="icon-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <h3>Pharmacy Requests</h3>
+          <p class="cap">Awaiting dispense</p>
+          <p class="value" id="statPharmacy" data-target="9">0</p>
+        </div>
+ 
+      </div>
+ 
+      <div class="glass-strip">
+        <div class="glass-strip-head">
+          <h2>Quick Access</h2>
+          <span>Jump straight to a module</span>
+        </div>
+        <div class="icon-tabs">
+          <a href="Medical_records.html" class="icon-tab">
+            <span class="icon-wrap"><img src="electronic_medical_report_icon.jpg" alt="Electronic Medical Records"></span>
+            <span>Medical Records</span>
+          </a>
+          <a href="billing.html" class="icon-tab">
+            <span class="icon-wrap"><img src="billing_icon.jpg" alt="Billing"></span>
+            <span>Billing</span>
+          </a>
+          <a href="laboratory.html" class="icon-tab">
+            <span class="icon-wrap"><img src="lab_icon.jpg" alt="Laboratory"></span>
+            <span>Laboratory</span>
+          </a>
+          <a href="reports.html" class="icon-tab">
+            <span class="icon-wrap"><img src="medical_reports_icon.jpg" alt="Medical Reports"></span>
+            <span>Reports</span>
+          </a>
+          <a href="pharmacy.html" class="icon-tab">
+            <span class="icon-wrap"><img src="medicine_icon.jpg" alt="Pharmacy"></span>
+            <span>Pharmacy</span>
+          </a>
+          <a href="staff.html" class="icon-tab">
+            <span class="icon-wrap"><img src="staff_icon.jpg" alt="Staff Management"></span>
+            <span>Staff</span>
+          </a>
+          <a href="profile.html" class="icon-tab">
+            <span class="icon-wrap"><img src="profile_icon.jpg" alt="Profile"></span>
+            <span>Profile</span>
+          </a>
+        </div>
+      </div>
+ 
+    </main>
+ 
+    <footer class="site-footer">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div class="footer-brand">
+            <img src="medisync_logo.jpeg" alt="MediSync logo">
+            <strong>MediSync HMS</strong>
+          </div>
+          <p>Faster care, better sync. MediSync centralizes patient records, appointments, billing, laboratory, and pharmacy operations into one connected hospital management system.</p>
+        </div>
+ 
+        <div class="footer-col">
+          <h4>Contact</h4>
+          <ul>
+            <li>
+              <a href="mailto:info@medisync-hms.com">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg>
+                medisync@gmail.com
+              </a>
+            </li>
+           
+            <li>
+              <a href="#">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                123 Hospital Road, Colombo
+              </a>
+            </li>
+          </ul>
+        </div>
+ 
+        <div class="footer-col">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="contact.html">Contact Us</a></li>
+            <li><a href="about.html">About Us</a></li>
+          </ul>
+        </div>
+      </div>
+ 
+      <div class="footer-bottom">
+        <p>&copy; 2026 MediSync Hospital Management System. All rights reserved.</p>
+       
+      </div>
+    </footer>
+ 
+  </div>
+</div>
+ 
+<script>
+ 
+  var stats = [
+    { el: document.getElementById('statPatients'),     value: 0, min: 90,  max: 180, step: 2 },
+    { el: document.getElementById('statAppointments'), value: 0, min: 30,  max: 80,  step: 1 },
+    { el: document.getElementById('statLabAlerts'),     value: 0, min: 0,   max: 14,  step: 1 },
+    { el: document.getElementById('statPharmacy'),      value: 0, min: 0,   max: 20,  step: 1 }
+  ];
+ 
+  function countUp(stat) {
+    var target = parseInt(stat.el.getAttribute('data-target'), 10) || 0;
+    stat.value = 0;
+    var duration = 900;
+    var startTime = null;
+ 
+    function step(ts) {
+      if (!startTime) startTime = ts;
+      var progress = Math.min((ts - startTime) / duration, 1);
+      var current = Math.round(target * progress);
+      stat.el.textContent = current;
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        stat.value = target;
+      }
+    }
+    requestAnimationFrame(step);
+  }
+ 
+  stats.forEach(countUp);
+ 
+  function nudge(stat) {
+    var change = Math.floor(Math.random() * (stat.step * 2 + 1)) - stat.step;
+    var next = stat.value + change;
+    next = Math.max(stat.min, Math.min(stat.max, next));
+    if (next === stat.value) return;
+    stat.value = next;
+    stat.el.textContent = next;
+    stat.el.classList.remove('bump');
+    void stat.el.offsetWidth; 
+    stat.el.classList.add('bump');
+  }
+ 
+  setInterval(function () {
+    var i = Math.floor(Math.random() * stats.length);
+    nudge(stats[i]);
+  }, 3500);
+</script>
+ 
+</body>
+</html>

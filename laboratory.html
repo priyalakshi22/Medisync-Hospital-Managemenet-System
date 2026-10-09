@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laboratory — MediSync HMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sky-900: #0a3554;
+  --sky-800: #0d4266;
+  --sky-700: #10557f;
+  --sky-600: #1478a8;
+  --sky-500: #1c9fe0;
+  --sky-400: #3fb6ea;
+  --sky-300: #7ccdf0;
+  --sky-100: #e4f4fb;
+  --paper: #f2f8fb;
+  --paper-line: #dbe8ef;
+  --ink: #142c3a;
+  --slate: #5c7284;
+  --slate-light: #94a8b6;
+  --pulse: #e85d4e;
+  --amber: #d99a2b;
+  --good: #2e9a6c;
+
+  --font-display: "Fraunces", "Iowan Old Style", serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; min-height: 100vh; background: var(--paper); color: var(--ink); font-family: var(--font-body); }
+a { color: inherit; text-decoration: none; }
+button, select, input, textarea { font-family: var(--font-body); }
+
+.app-shell { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: 240px; flex-shrink: 0;
+  background: linear-gradient(180deg, var(--sky-900), var(--sky-800));
+  color: #eaf5fb;
+  display: flex; flex-direction: column;
+  padding: 1.6rem 1.1rem;
+  position: sticky; top: 0; height: 100vh;
+}
+.sidebar-brand { display: flex; align-items: center; gap: 0.7rem; padding: 0 0.4rem 1.6rem; }
+.sidebar-brand .logo-mark {
+  width: 42px; height: 42px; border-radius: 11px;
+  background: rgba(255,255,255,0.95); display: flex; align-items: center; justify-content: center;
+  color: var(--sky-600); flex-shrink: 0; overflow: hidden;
+}
+.sidebar-brand .logo-mark img { width: 100%; height: 100%; object-fit: contain; }
+.sidebar-brand .brand-text strong {
+  display: block; font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; letter-spacing: 0.01em;
+}
+.sidebar-brand .brand-text span {
+  display: block; font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--sky-300); margin-top: 0.1rem;
+}
+
+.sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
+.sidebar-nav a {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.68rem 0.8rem; border-radius: 10px;
+  font-size: 0.9rem; font-weight: 500; color: rgba(234,245,251,0.82);
+  transition: background 0.15s, color 0.15s;
+}
+.sidebar-nav a svg { width: 18px; height: 18px; flex-shrink: 0; }
+.sidebar-nav a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.sidebar-nav a.active { background: var(--sky-500); color: #fff; }
+
+.sidebar-logout {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.68rem 0.8rem; border-radius: 10px;
+  font-size: 0.9rem; font-weight: 500; color: rgba(234,245,251,0.72);
+  transition: background 0.15s, color 0.15s; cursor: pointer; background: none; border: none; width: 100%;
+}
+.sidebar-logout svg { width: 18px; height: 18px; }
+.sidebar-logout:hover { background: rgba(232,93,78,0.18); color: #ffb3a8; }
+
+.main-area { flex: 1; min-width: 0; }
+
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; padding: 1.3rem 2.2rem;
+  background: #fff; border-bottom: 1px solid var(--paper-line);
+  flex-wrap: wrap;
+}
+.topbar h1 {
+  font-family: var(--font-display); font-weight: 600; font-size: 1.55rem;
+  margin: 0; color: var(--ink);
+}
+.topbar p { margin: 0.2rem 0 0; font-size: 0.85rem; color: var(--slate); }
+
+.topbar-right { display: flex; align-items: center; gap: 0.8rem; }
+.profile-link {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--sky-500); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  transition: filter 0.15s, box-shadow 0.15s;
+  box-shadow: 0 0 0 2px var(--sky-100);
+}
+.profile-link:hover { filter: brightness(1.08); }
+.profile-link svg { width: 20px; height: 20px; }
+
+main { padding: 2rem 2.2rem 3rem; }
+
+.mini-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.4rem; }
+.mini-card { background: #fff; border: 1px solid var(--paper-line); border-radius: 12px; padding: 1.1rem 1.2rem; }
+.mini-card .label { font-size: 0.78rem; color: var(--slate); margin: 0 0 0.3rem; }
+.mini-card .value { font-family: var(--font-display); font-weight: 600; font-size: 1.5rem; margin: 0; color: var(--ink); }
+.mini-card.accent .value { color: var(--sky-600); }
+.mini-card.warn .value { color: var(--amber); }
+.mini-card.alert .value { color: var(--pulse); }
+
+.toolbar { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.3rem; flex-wrap: wrap; }
+.search-box { flex: 1; min-width: 240px; position: relative; }
+.search-box svg {
+  position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%);
+  width: 17px; height: 17px; color: var(--slate-light);
+}
+.search-box input {
+  width: 100%; padding: 0.72rem 1rem 0.72rem 2.6rem;
+  border-radius: 10px; border: 1px solid var(--paper-line);
+  background: #fff; font-size: 0.9rem; color: var(--ink);
+}
+.search-box input:focus { outline: none; border-color: var(--sky-400); box-shadow: 0 0 0 3px var(--sky-100); }
+.filter-select {
+  font-size: 0.88rem; padding: 0.68rem 0.9rem; border-radius: 10px;
+  border: 1px solid var(--paper-line); background: #fff; color: var(--ink);
+}
+.btn-primary {
+  display: flex; align-items: center; gap: 0.5rem;
+  background: var(--sky-900); color: #fff; border: none;
+  padding: 0.72rem 1.2rem; border-radius: 10px;
+  font-size: 0.88rem; font-weight: 600; cursor: pointer;
+  transition: background 0.15s; white-space: nowrap;
+}
+.btn-primary:hover { background: var(--sky-800); }
+.btn-primary svg { width: 16px; height: 16px; }
+
+.stage-track { display: flex; align-items: center; gap: 0.3rem; min-width: 260px; flex: 1.4; }
+.stage-step { display: flex; align-items: center; gap: 0.35rem; flex: 1; }
+.stage-dot {
+  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--paper-line); color: var(--slate-light); font-size: 0.68rem; font-weight: 700;
+}
+.stage-dot.done { background: var(--good); color: #fff; }
+.stage-dot.current { background: var(--sky-500); color: #fff; }
+.stage-label { font-size: 0.68rem; color: var(--slate-light); white-space: nowrap; }
+.stage-label.done { color: var(--good); font-weight: 600; }
+.stage-label.current { color: var(--sky-700); font-weight: 700; }
+.stage-line { flex: 1; height: 2px; background: var(--paper-line); }
+.stage-line.done { background: var(--good); }
+
+.lab-list { display: flex; flex-direction: column; gap: 0.9rem; }
+.lab-card {
+  background: #fff; border: 1px solid var(--paper-line); border-radius: 14px;
+  padding: 1.1rem 1.4rem; display: flex; align-items: center; gap: 1.2rem;
+  flex-wrap: wrap; transition: box-shadow 0.15s, border-color 0.15s;
+}
+.lab-card:hover { box-shadow: 0 10px 24px rgba(20,44,58,0.08); border-color: var(--sky-300); }
+
+.lab-name-block { min-width: 190px; flex: 1; }
+.lab-name-block h3 { margin: 0; font-size: 1rem; font-weight: 700; }
+.lab-name-block .sub { margin: 0.15rem 0 0; font-size: 0.8rem; color: var(--slate); }
+.lab-name-block .meta { margin: 0.15rem 0 0; font-size: 0.76rem; color: var(--slate-light); font-family: var(--font-mono); }
+
+.status-badge {
+  font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+  padding: 0.2rem 0.55rem; border-radius: 999px; white-space: nowrap;
+}
+.status-badge.requested { background: var(--sky-100); color: var(--sky-800); }
+.status-badge.collected { background: rgba(217,154,43,0.16); color: var(--amber); }
+.status-badge.resulted { background: rgba(31,122,114,0.12); color: #1f7a72; }
+.status-badge.reported { background: rgba(46,154,108,0.14); color: var(--good); }
+.status-badge.critical { background: rgba(232,93,78,0.14); color: var(--pulse); }
+
+.row-actions { display: flex; gap: 0.5rem; margin-left: auto; flex-wrap: wrap; }
+.pill-btn {
+  display: flex; align-items: center; gap: 0.4rem;
+  border: 1px solid var(--paper-line); background: #fff; color: var(--ink);
+  padding: 0.48rem 0.85rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600;
+  cursor: pointer; transition: background 0.15s, border-color 0.15s;
+}
+.pill-btn svg { width: 14px; height: 14px; }
+.pill-btn:hover { border-color: var(--sky-400); background: var(--sky-100); }
+.pill-btn.primary-step { background: var(--sky-500); border-color: var(--sky-500); color: #fff; }
+.pill-btn.primary-step:hover { background: var(--sky-600); }
+.pill-btn.done-step { background: var(--good); border-color: var(--good); color: #fff; }
+.pill-btn.done-step:hover { background: #268057; }
+
+.empty-state {
+  text-align: center; padding: 3rem 1rem; color: var(--slate);
+  background: #fff; border: 1px dashed var(--paper-line); border-radius: 14px;
+}
+
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(10,53,84,0.45);
+  display: none; align-items: center; justify-content: center; z-index: 50; padding: 1.2rem;
+}
+.modal-overlay.is-open { display: flex; }
+.modal-box {
+  background: #fff; border-radius: 16px; width: 100%; max-width: 560px;
+  max-height: 90vh; overflow-y: auto; box-shadow: 0 30px 60px rgba(10,53,84,0.35);
+}
+.modal-head {
+  background: var(--sky-900); color: #fff; padding: 1.3rem 1.6rem;
+  display: flex; align-items: center; justify-content: space-between;
+  border-radius: 16px 16px 0 0; position: sticky; top: 0; z-index: 2;
+}
+.modal-head h2 { margin: 0; font-family: var(--font-display); font-size: 1.2rem; font-weight: 600; }
+.modal-close {
+  background: none; border: none; color: #fff; opacity: 0.85; cursor: pointer;
+  width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 6px;
+}
+.modal-close:hover { opacity: 1; background: rgba(255,255,255,0.14); }
+.modal-close svg { width: 18px; height: 18px; }
+
+.modal-body { padding: 1.4rem 1.6rem 0.4rem; display: flex; flex-direction: column; gap: 1.05rem; }
+.field label { display: block; font-size: 0.86rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--ink); }
+.field input, .field select, .field textarea {
+  width: 100%; padding: 0.65rem 0.8rem; border-radius: 9px;
+  border: 1px solid var(--paper-line); background: var(--paper);
+  font-size: 0.86rem; color: var(--ink);
+}
+.field textarea { resize: vertical; min-height: 64px; }
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none; border-color: var(--sky-400); box-shadow: 0 0 0 3px var(--sky-100); background: #fff;
+}
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+.modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1.3rem 1.6rem 1.5rem; }
+.btn-secondary {
+  background: var(--paper); border: 1px solid var(--paper-line); color: var(--ink);
+  padding: 0.65rem 1.2rem; border-radius: 9px; font-size: 0.86rem; font-weight: 600; cursor: pointer;
+}
+.btn-secondary:hover { background: #e9eff3; }
+
+.summary-block { background: var(--paper); border-radius: 12px; padding: 1rem 1.1rem; }
+.summary-block h4 { margin: 0 0 0.7rem; font-size: 0.78rem; font-weight: 700; color: var(--sky-800); text-transform: uppercase; letter-spacing: 0.02em; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+.summary-grid .lbl { font-size: 0.72rem; color: var(--slate); margin-bottom: 0.15rem; }
+.summary-grid .val { font-size: 0.92rem; font-weight: 700; color: var(--ink); }
+
+.report-preview { border: 1px solid var(--paper-line); border-radius: 10px; padding: 1rem 1.1rem; background: #fff; }
+.report-preview h4 { margin: 0 0 0.6rem; font-size: 0.85rem; font-weight: 700; color: var(--sky-900); }
+.report-preview .rp-row { display: flex; justify-content: space-between; font-size: 0.86rem; padding: 0.3rem 0; border-bottom: 1px solid var(--paper-line); }
+.report-preview .rp-row:last-child { border-bottom: none; }
+
+@media (max-width: 1080px) {
+  .mini-stats { grid-template-columns: 1fr 1fr; }
+  .stage-track { flex-basis: 100%; }
+}
+@media (max-width: 760px) {
+  .app-shell { flex-direction: column; }
+  .sidebar { width: 100%; height: auto; position: relative; flex-direction: row; align-items: center; overflow-x: auto; }
+  .sidebar-brand { padding: 0 1rem 0 0; }
+  .sidebar-nav { flex-direction: row; }
+  .sidebar-logout { display: none; }
+  main { padding: 1.4rem 1.2rem 2.4rem; }
+  .topbar { padding: 1rem 1.2rem; }
+  .mini-stats { grid-template-columns: 1fr; }
+  .row-actions { margin-left: 0; width: 100%; }
+  .field-row { grid-template-columns: 1fr; }
+  .stage-label { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo-mark">
+        <img src="medisync_logo.jpeg" alt="MediSync logo">
+      </div>
+      <div class="brand-text">
+        <strong>MediSync</strong>
+        <span>Hospital Management</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="dashboard.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Dashboard
+      </a>
+      <a href="patients.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Patients
+      </a>
+      <a href="doctors.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg>
+        Doctors
+      </a>
+      <a href="billing.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 14h3"/></svg>
+        Billing
+      </a>
+      <a href="laboratory.html" class="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6.5L4.5 17a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L15 8.5V2"/><path d="M9 2h6M8.5 13h7"/></svg>
+        Laboratory
+      </a>
+      <a href="contact.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.68 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.32 1.85.55 2.81.68A2 2 0 0 1 22 16.92Z"/></svg>
+        Contact Us
+      </a>
+    </nav>
+
+    <a href="login_page.html" class="sidebar-logout">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </a>
+  </aside>
+
+  <div class="main-area">
+
+    <header class="topbar">
+      <div>
+        <h1>Laboratory</h1>
+        <p>Test requests, sample collection, result entry, and report generation.</p>
+      </div>
+      <div class="topbar-right">
+        <a href="login_page.html" class="profile-link" title="Login / Logout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+        </a>
+      </div>
+    </header>
+
+    <main>
+      <div class="mini-stats">
+        <div class="mini-card">
+          <p class="label">Open Requests</p>
+          <p class="value" id="statOpen">0</p>
+        </div>
+        <div class="mini-card accent">
+          <p class="label">Reports Generated Today</p>
+          <p class="value" id="statCompletedToday">0</p>
+        </div>
+        <div class="mini-card warn">
+          <p class="label">Pending Collection</p>
+          <p class="value" id="statPendingCollection">0</p>
+        </div>
+        <div class="mini-card alert">
+          <p class="label">Critical Results</p>
+          <p class="value" id="statCritical">0</p>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" id="searchInput" placeholder="Search by patient or test name&hellip;">
+        </div>
+        <select class="filter-select" id="statusFilter">
+          <option value="all">All stages</option>
+          <option value="requested">Requested</option>
+          <option value="collected">Sample Collected</option>
+          <option value="resulted">Result Entered</option>
+          <option value="reported">Report Generated</option>
+        </select>
+        <button class="btn-primary" type="button" id="newRequestBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          New Test Request
+        </button>
+      </div>
+
+      <div class="lab-list" id="labList"></div>
+      <div class="empty-state" id="emptyState" style="display:none;">No lab requests match your search.</div>
+    </main>
+  </div>
+</div>
+
+<!-- New Test Request Modal -->
+<div class="modal-overlay" id="requestModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2>New Test Request</h2>
+      <button class="modal-close" data-close="requestModal" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <form id="requestForm">
+      <div class="modal-body">
+        <div class="field" id="f-patient">
+          <label for="req-patient">Patient Name</label>
+          <input type="text" id="req-patient" placeholder="Enter patient name">
+        </div>
+        <div class="field-row">
+          <div class="field" id="f-test">
+            <label for="req-test">Test Name</label>
+            <input type="text" id="req-test" placeholder="e.g. Full Blood Count">
+          </div>
+          <div class="field" id="f-ward">
+            <label for="req-ward">Ward / Source</label>
+            <input type="text" id="req-ward" placeholder="e.g. Ward 3B, OPD">
+          </div>
+        </div>
+        <div class="field" id="f-priority">
+          <label for="req-priority">Priority</label>
+          <select id="req-priority">
+            <option value="Routine">Routine</option>
+            <option value="Urgent">Urgent</option>
+            <option value="Critical">Critical</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" data-close="requestModal">Cancel</button>
+        <button type="submit" class="btn-primary">Submit Request</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Sample Collection Modal -->
+<div class="modal-overlay" id="collectModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2>Sample Collection</h2>
+      <button class="modal-close" data-close="collectModal" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="summary-block">
+        <h4>Test Request</h4>
+        <div class="summary-grid">
+          <div><div class="lbl">Patient</div><div class="val" id="colPatient">&mdash;</div></div>
+          <div><div class="lbl">Test</div><div class="val" id="colTest">&mdash;</div></div>
+          <div><div class="lbl">Ward / Source</div><div class="val" id="colWard">&mdash;</div></div>
+          <div><div class="lbl">Requested</div><div class="val" id="colRequested">&mdash;</div></div>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field" style="margin:0;"><label>Collection Date &amp; Time</label><input type="datetime-local" id="col-datetime"></div>
+        <div class="field" style="margin:0;"><label>Collected By</label><input type="text" id="col-by" placeholder="e.g. Nurse Perera"></div>
+      </div>
+      <div class="field" style="margin:0;"><label>Sample Type</label>
+        <select id="col-type">
+          <option>Blood</option>
+          <option>Urine</option>
+          <option>Swab</option>
+          <option>Tissue</option>
+          <option>Imaging (N/A)</option>
+        </select>
+      </div>
+      <div class="field" style="margin:0;"><label>Notes</label><textarea id="col-notes" placeholder="Collection notes, patient condition, etc.&hellip;"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" data-close="collectModal">Cancel</button>
+      <button type="button" class="btn-primary" id="confirmCollectBtn">Confirm Collection</button>
+    </div>
+  </div>
+</div>
+
+<!-- Result Entry Modal -->
+<div class="modal-overlay" id="resultModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2>Result Entry</h2>
+      <button class="modal-close" data-close="resultModal" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="summary-block">
+        <h4>Sample</h4>
+        <div class="summary-grid">
+          <div><div class="lbl">Patient</div><div class="val" id="resPatient">&mdash;</div></div>
+          <div><div class="lbl">Test</div><div class="val" id="resTest">&mdash;</div></div>
+          <div><div class="lbl">Sample Type</div><div class="val" id="resSampleType">&mdash;</div></div>
+          <div><div class="lbl">Collected</div><div class="val" id="resCollected">&mdash;</div></div>
+        </div>
+      </div>
+      <div class="field" style="margin:0;"><label>Result</label><textarea id="res-value" placeholder="Result value / findings&hellip;"></textarea></div>
+      <div class="field-row">
+        <div class="field" style="margin:0;"><label>Reference Range</label><input type="text" id="res-range" placeholder="e.g. 4.0–11.0 x10^9/L"></div>
+        <div class="field" style="margin:0;"><label>Flag</label>
+          <select id="res-flag">
+            <option value="Normal">Normal</option>
+            <option value="Abnormal">Abnormal</option>
+            <option value="Critical">Critical</option>
+          </select>
+        </div>
+      </div>
+      <div class="field" style="margin:0;"><label>Entered By</label><input type="text" id="res-by" placeholder="e.g. Lab Tech Silva"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" data-close="resultModal">Cancel</button>
+      <button type="button" class="btn-primary" id="confirmResultBtn">Save Result</button>
+    </div>
+  </div>
+</div>
+
+<!-- Report Generation Modal -->
+<div class="modal-overlay" id="reportModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2 id="reportModalTitle">Report</h2>
+      <button class="modal-close" data-close="reportModal" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="report-preview" id="reportPreview"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" id="printReportBtn">Print Report</button>
+      <button type="button" class="btn-primary" id="generateReportBtn">Generate Report</button>
+    </div>
+  </div>
+</div>
+
+<div id="jsErrorBanner" style="display:none; background:#fee; border:1px solid #e85d4e; color:#a3392d; padding:1rem 2.2rem; font-family:monospace; font-size:0.85rem; white-space:pre-wrap;"></div>
+<script>
+try {
+
+  var STORAGE_KEY = 'medisync_lab_requests';
+  var seedRequests = [
+    { id: 'LAB-501', patient: 'R. Fernando', test: 'Full Blood Count', ward: 'Ward 3B', priority: 'Routine',
+      requested: '2026-08-25T08:40', stage: 'requested',
+      sample: null, result: null },
+    { id: 'LAB-500', patient: 'S. Wickramasinghe', test: 'Liver Function Test', ward: 'OPD', priority: 'Routine',
+      requested: '2026-08-24T15:10', stage: 'collected',
+      sample: { datetime: '2026-08-24T16:00', by: 'Nurse Perera', type: 'Blood', notes: '' }, result: null },
+    { id: 'LAB-499', patient: 'M. Jayasuriya', test: 'Chest X-Ray', ward: 'Ward 1A', priority: 'Routine',
+      requested: '2026-08-23T09:55', stage: 'resulted',
+      sample: { datetime: '2026-08-23T10:30', by: 'Radiographer Costa', type: 'Imaging (N/A)', notes: '' },
+      result: { value: 'No acute infiltrates. Heart size normal.', range: '', flag: 'Normal', by: 'Dr. Fernando' } },
+    { id: 'LAB-498', patient: 'A. Silva', test: 'Blood Glucose (Fasting)', ward: 'Ward 2C', priority: 'Critical',
+      requested: '2026-08-25T06:30', stage: 'resulted',
+      sample: { datetime: '2026-08-25T06:45', by: 'Nurse Jayawardena', type: 'Blood', notes: '' },
+      result: { value: '312 mg/dL', range: '70–110 mg/dL', flag: 'Critical', by: 'Lab Tech Silva' } },
+    { id: 'LAB-497', patient: 'D. Rajapaksa', test: 'Urine Culture', ward: 'OPD', priority: 'Routine',
+      requested: '2026-08-21T11:20', stage: 'reported',
+      sample: { datetime: '2026-08-21T11:40', by: 'Nurse Perera', type: 'Urine', notes: '' },
+      result: { value: 'No significant growth', range: '', flag: 'Normal', by: 'Lab Tech Silva' } }
+  ];
+
+  function loadRequests() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    saveRequests(seedRequests);
+    return JSON.parse(JSON.stringify(seedRequests));
+  }
+  function saveRequests(list) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch (e) {} }
+
+  var requests = loadRequests();
+  var activeId = null;
+
+  var listEl = document.getElementById('labList');
+  var emptyEl = document.getElementById('emptyState');
+  var searchInput = document.getElementById('searchInput');
+  var statusFilter = document.getElementById('statusFilter');
+
+  var STAGES = [
+    { key: 'requested', label: 'Requested' },
+    { key: 'collected', label: 'Collected' },
+    { key: 'resulted', label: 'Result' },
+    { key: 'reported', label: 'Report' }
+  ];
+
+  function escapeHtml(str) {
+    return String(str == null ? '' : str).replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+  function findRequest(id) { return requests.find(function (r) { return r.id === id; }); }
+  function formatDT(iso) {
+    if (!iso) return '&mdash;';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var hh = d.getHours(); var ampm = hh >= 12 ? 'PM' : 'AM'; var h12 = hh % 12 || 12;
+    var mm = String(d.getMinutes()).padStart(2, '0');
+    return d.getDate() + ' ' + months[d.getMonth()] + ', ' + h12 + ':' + mm + ' ' + ampm;
+  }
+  function stageIndex(stage) { return STAGES.findIndex(function (s) { return s.key === stage; }); }
+
+  function renderStats() {
+    var open = requests.filter(function (r) { return r.stage !== 'reported'; }).length;
+    var pendingCollection = requests.filter(function (r) { return r.stage === 'requested'; }).length;
+    var critical = requests.filter(function (r) { return r.result && r.result.flag === 'Critical'; }).length;
+    var today = new Date().toISOString().slice(0, 10);
+    var completedToday = requests.filter(function (r) { return r.stage === 'reported' && (r.reportedAt || '').slice(0, 10) === today; }).length;
+
+    document.getElementById('statOpen').textContent = open;
+    document.getElementById('statCompletedToday').textContent = completedToday;
+    document.getElementById('statPendingCollection').textContent = pendingCollection;
+    document.getElementById('statCritical').textContent = critical;
+  }
+
+  function stageTrackHtml(stage) {
+    var idx = stageIndex(stage);
+    return '<div class="stage-track">' + STAGES.map(function (s, i) {
+      var dotClass = i < idx ? 'done' : (i === idx ? 'current' : '');
+      var labelClass = i < idx ? 'done' : (i === idx ? 'current' : '');
+      var dotContent = i < idx ? '&#10003;' : (i + 1);
+      var line = i < STAGES.length - 1 ? '<span class="stage-line ' + (i < idx ? 'done' : '') + '"></span>' : '';
+      return '<div class="stage-step"><span class="stage-dot ' + dotClass + '">' + dotContent + '</span><span class="stage-label ' + labelClass + '">' + s.label + '</span></div>' + line;
+    }).join('') + '</div>';
+  }
+
+  function actionButtonHtml(r) {
+    if (r.stage === 'requested') {
+      return '<button class="pill-btn primary-step collect-btn" type="button" data-id="' + r.id + '">Collect Sample</button>';
+    }
+    if (r.stage === 'collected') {
+      return '<button class="pill-btn primary-step result-btn" type="button" data-id="' + r.id + '">Enter Result</button>';
+    }
+    if (r.stage === 'resulted') {
+      return '<button class="pill-btn primary-step report-btn" type="button" data-id="' + r.id + '">Generate Report</button>';
+    }
+    return '<button class="pill-btn done-step report-btn" type="button" data-id="' + r.id + '">View Report</button>';
+  }
+
+  function badgeFor(r) {
+    if (r.result && r.result.flag === 'Critical') return '<span class="status-badge critical">Critical</span>';
+    return '<span class="status-badge ' + r.stage + '">' + STAGES[stageIndex(r.stage)].label + '</span>';
+  }
+
+  function render() {
+    var q = (searchInput.value || '').trim().toLowerCase();
+    var statusVal = statusFilter.value;
+
+    var visible = requests.filter(function (r) {
+      var matchesQ = !q || r.patient.toLowerCase().indexOf(q) !== -1 || r.test.toLowerCase().indexOf(q) !== -1 || r.id.toLowerCase().indexOf(q) !== -1;
+      var matchesStatus = statusVal === 'all' || r.stage === statusVal;
+      return matchesQ && matchesStatus;
+    });
+
+    listEl.innerHTML = '';
+    emptyEl.style.display = visible.length ? 'none' : 'block';
+
+    visible.slice().reverse().forEach(function (r) {
+      var card = document.createElement('div');
+      card.className = 'lab-card';
+      card.innerHTML =
+        '<div class="lab-name-block">' +
+          '<h3>' + escapeHtml(r.patient) + '</h3>' +
+          '<p class="sub">' + escapeHtml(r.test) + ' &middot; ' + escapeHtml(r.ward) + '</p>' +
+          '<p class="meta">' + escapeHtml(r.id) + ' &middot; requested ' + formatDT(r.requested) + '</p>' +
+        '</div>' +
+        stageTrackHtml(r.stage) +
+        badgeFor(r) +
+        '<div class="row-actions">' + actionButtonHtml(r) + '</div>';
+      listEl.appendChild(card);
+    });
+
+    renderStats();
+  }
+  render();
+  searchInput.addEventListener('input', render);
+  statusFilter.addEventListener('change', render);
+
+  function openModal(id) { document.getElementById(id).classList.add('is-open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('is-open'); }
+  document.querySelectorAll('[data-close]').forEach(function (btn) {
+    btn.addEventListener('click', function () { closeModal(btn.dataset.close); });
+  });
+  document.querySelectorAll('.modal-overlay').forEach(function (ov) {
+    ov.addEventListener('click', function (e) { if (e.target === ov) ov.classList.remove('is-open'); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.is-open').forEach(function (ov) { ov.classList.remove('is-open'); });
+  });
+
+  document.getElementById('newRequestBtn').addEventListener('click', function () {
+    document.getElementById('req-patient').value = '';
+    document.getElementById('req-test').value = '';
+    document.getElementById('req-ward').value = '';
+    document.getElementById('req-priority').value = 'Routine';
+    openModal('requestModal');
+  });
+
+  document.getElementById('requestForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var patient = document.getElementById('req-patient').value.trim();
+    var test = document.getElementById('req-test').value.trim();
+    var ward = document.getElementById('req-ward').value.trim();
+    var priority = document.getElementById('req-priority').value;
+    if (!patient || !test) { alert('Please enter patient name and test name.'); return; }
+
+    var nums = requests.map(function (r) { return parseInt(r.id.replace(/\D/g, ''), 10) || 0; });
+    var nextNum = (nums.length ? Math.max.apply(null, nums) : 500) + 1;
+    requests.push({
+      id: 'LAB-' + nextNum, patient: patient, test: test, ward: ward || '—', priority: priority,
+      requested: new Date().toISOString().slice(0, 16), stage: 'requested', sample: null, result: null
+    });
+    saveRequests(requests);
+    render();
+    closeModal('requestModal');
+  });
+
+  listEl.addEventListener('click', function (e) {
+    var collectBtn = e.target.closest('.collect-btn');
+    var resultBtn = e.target.closest('.result-btn');
+    var reportBtn = e.target.closest('.report-btn');
+
+    if (collectBtn) {
+      var r1 = findRequest(collectBtn.dataset.id);
+      activeId = r1.id;
+      document.getElementById('colPatient').textContent = r1.patient;
+      document.getElementById('colTest').textContent = r1.test;
+      document.getElementById('colWard').textContent = r1.ward;
+      document.getElementById('colRequested').textContent = formatDT(r1.requested);
+      document.getElementById('col-datetime').value = new Date().toISOString().slice(0, 16);
+      document.getElementById('col-by').value = '';
+      document.getElementById('col-type').value = 'Blood';
+      document.getElementById('col-notes').value = '';
+      openModal('collectModal');
+    } else if (resultBtn) {
+      var r2 = findRequest(resultBtn.dataset.id);
+      activeId = r2.id;
+      document.getElementById('resPatient').textContent = r2.patient;
+      document.getElementById('resTest').textContent = r2.test;
+      document.getElementById('resSampleType').textContent = r2.sample ? r2.sample.type : '—';
+      document.getElementById('resCollected').textContent = r2.sample ? formatDT(r2.sample.datetime) : '—';
+      document.getElementById('res-value').value = '';
+      document.getElementById('res-range').value = '';
+      document.getElementById('res-flag').value = 'Normal';
+      document.getElementById('res-by').value = '';
+      openModal('resultModal');
+    } else if (reportBtn) {
+      var r3 = findRequest(reportBtn.dataset.id);
+      activeId = r3.id;
+      renderReportPreview(r3);
+      document.getElementById('reportModalTitle').textContent = (r3.stage === 'reported' ? 'Report' : 'Generate Report') + ' — ' + r3.id;
+      document.getElementById('generateReportBtn').style.display = r3.stage === 'reported' ? 'none' : 'inline-flex';
+      openModal('reportModal');
+    }
+  });
+
+  document.getElementById('confirmCollectBtn').addEventListener('click', function () {
+    if (!activeId) return;
+    var r = findRequest(activeId);
+    var datetime = document.getElementById('col-datetime').value;
+    var by = document.getElementById('col-by').value.trim();
+    var type = document.getElementById('col-type').value;
+    var notes = document.getElementById('col-notes').value.trim();
+    if (!datetime || !by) { alert('Please enter the collection date/time and who collected the sample.'); return; }
+
+    r.sample = { datetime: datetime, by: by, type: type, notes: notes };
+    r.stage = 'collected';
+    saveRequests(requests);
+    render();
+    closeModal('collectModal');
+  });
+
+  document.getElementById('confirmResultBtn').addEventListener('click', function () {
+    if (!activeId) return;
+    var r = findRequest(activeId);
+    var value = document.getElementById('res-value').value.trim();
+    var range = document.getElementById('res-range').value.trim();
+    var flag = document.getElementById('res-flag').value;
+    var by = document.getElementById('res-by').value.trim();
+    if (!value || !by) { alert('Please enter the result and who entered it.'); return; }
+
+    r.result = { value: value, range: range, flag: flag, by: by };
+    r.stage = 'resulted';
+    saveRequests(requests);
+    render();
+    closeModal('resultModal');
+  });
+
+  function renderReportPreview(r) {
+    var el = document.getElementById('reportPreview');
+    el.innerHTML =
+      '<h4>MediSync HMS — Laboratory Report</h4>' +
+      '<div class="rp-row"><span>Report ID</span><span>' + escapeHtml(r.id) + '</span></div>' +
+      '<div class="rp-row"><span>Patient</span><span>' + escapeHtml(r.patient) + '</span></div>' +
+      '<div class="rp-row"><span>Test</span><span>' + escapeHtml(r.test) + '</span></div>' +
+      '<div class="rp-row"><span>Ward / Source</span><span>' + escapeHtml(r.ward) + '</span></div>' +
+      '<div class="rp-row"><span>Requested</span><span>' + formatDT(r.requested) + '</span></div>' +
+      '<div class="rp-row"><span>Sample Collected</span><span>' + (r.sample ? formatDT(r.sample.datetime) + ' by ' + escapeHtml(r.sample.by) : '&mdash;') + '</span></div>' +
+      '<div class="rp-row"><span>Sample Type</span><span>' + (r.sample ? escapeHtml(r.sample.type) : '&mdash;') + '</span></div>' +
+      '<div class="rp-row"><span>Result</span><span>' + (r.result ? escapeHtml(r.result.value) : '&mdash;') + '</span></div>' +
+      '<div class="rp-row"><span>Reference Range</span><span>' + (r.result && r.result.range ? escapeHtml(r.result.range) : '&mdash;') + '</span></div>' +
+      '<div class="rp-row"><span>Flag</span><span>' + (r.result ? escapeHtml(r.result.flag) : '&mdash;') + '</span></div>' +
+      '<div class="rp-row"><span>Entered By</span><span>' + (r.result ? escapeHtml(r.result.by) : '&mdash;') + '</span></div>' +
+      (r.stage === 'reported' ? '<div class="rp-row"><span>Report Generated</span><span>' + formatDT(r.reportedAt) + '</span></div>' : '');
+  }
+
+  document.getElementById('generateReportBtn').addEventListener('click', function () {
+    if (!activeId) return;
+    var r = findRequest(activeId);
+    r.stage = 'reported';
+    r.reportedAt = new Date().toISOString().slice(0, 16);
+    saveRequests(requests);
+    render();
+    renderReportPreview(r);
+    document.getElementById('reportModalTitle').textContent = 'Report — ' + r.id;
+    document.getElementById('generateReportBtn').style.display = 'none';
+  });
+
+  document.getElementById('printReportBtn').addEventListener('click', function () {
+    if (!activeId) return;
+    var r = findRequest(activeId);
+    var win = window.open('', '_blank');
+    win.document.write('<html><head><title>' + r.id + '</title></head><body style="font-family:sans-serif;padding:2rem;">' + document.getElementById('reportPreview').innerHTML + '</body></html>');
+    win.document.close();
+    win.print();
+  });
+
+} catch (initErr) {
+  var banner = document.getElementById('jsErrorBanner');
+  if (banner) {
+    banner.style.display = 'block';
+    banner.textContent = 'This page hit a script error and could not load its data. Please screenshot this message and send it back: ' + (initErr && initErr.message ? initErr.message : initErr);
+  }
+  console.error('MediSync laboratory.html failed to initialize:', initErr);
+}
+</script>
+
+</body>
+</html>
